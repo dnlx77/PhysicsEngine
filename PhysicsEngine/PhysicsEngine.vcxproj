@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Rendering\ConsoleRenderer.cpp" />
     <ClCompile Include="src\Physics\PhysicsWorld.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Math\Vector2.cpp" />
@@ -28,6 +29,7 @@
     <ClInclude Include="include\Math\Vector2.h" />
     <ClInclude Include="include\Physics\PhysicsWorld.h" />
     <ClInclude Include="include\Physics\RigidBody.h" />
+    <ClInclude Include="include\Rendering\ConsoleRenderer.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

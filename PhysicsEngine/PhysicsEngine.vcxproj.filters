@@ -37,6 +37,12 @@
     <Filter Include="File di origine\Collision">
       <UniqueIdentifier>{8fde7de9-e561-4105-b8ec-5ec69ad7d43b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="File di intestazione\Rendering">
+      <UniqueIdentifier>{0aff2298-927e-4cff-ab17-1cb17425203e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="File di origine\Rendering">
+      <UniqueIdentifier>{455caaae-aba6-4bec-9d19-721c7643cf9b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Math\Vector2.cpp">
@@ -49,7 +55,10 @@
       <Filter>File di origine\Physics</Filter>
     </ClCompile>
     <ClCompile Include="src\Physics\PhysicsWorld.cpp">
-      <Filter>File di origine</Filter>
+      <Filter>File di origine\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rendering\ConsoleRenderer.cpp">
+      <Filter>File di origine\Rendering</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -60,7 +69,10 @@
       <Filter>File di intestazione\Physics</Filter>
     </ClInclude>
     <ClInclude Include="include\Physics\PhysicsWorld.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>File di intestazione\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Rendering\ConsoleRenderer.h">
+      <Filter>File di intestazione\Rendering</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

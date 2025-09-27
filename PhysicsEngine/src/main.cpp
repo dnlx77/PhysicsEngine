@@ -1,7 +1,9 @@
 ﻿#include <iostream>
+#include "Windows.h"
 #include "Math/Vector2.h"
 #include "Physics/RigidBody.h"
 #include "Physics/PhysicsWorld.h"
+#include "Rendering/ConsoleRenderer.h"
 
 void TestVector2()
 {
@@ -167,11 +169,50 @@ void TestPhysicsWorld()
     std::cout << "Ball position: (" << ball->position.x << ", " << ball->position.y << ")" << std::endl;
 }
 
+void TestRenderer()
+{
+    PhysicsWorld world;
+    ConsoleRenderer renderer(80, 24, 20.0f, 15.0f);
+
+    // Crea una palla che cade
+    RigidBody *ball = world.CreateRigidBody(Vector2(10, 12), 1.0f);
+    RigidBody *ground = world.CreateRigidBody(Vector2(10, 1), 0.0f); // massa 0 = statico
+
+    // Simula e mostra per ~2 secondi
+    for (int frame = 0; frame < 120; frame++) {
+        world.Update(1.0f / 60.0f);
+
+        renderer.Clear();
+        renderer.DrawWorld(world);
+        renderer.Present();
+
+        // Pausa semplice (sostituisci con Sleep se disponibile)
+        //for (volatile int i = 0; i < 50000000; i++);
+        Sleep(16);
+    }
+}
+
+void TestRendererStatic()
+{
+    PhysicsWorld world;
+    ConsoleRenderer renderer(80, 24, 20.0f, 15.0f);
+
+    RigidBody *ball = world.CreateRigidBody(Vector2(10, 7), 1.0f);
+
+    renderer.Clear();
+    renderer.DrawWorld(world);
+    renderer.Present();
+
+    // Aspetta input
+    std::cin.get();
+}
+
 int main()
 {
-    TestVector2();
+    /*TestVector2();
     TestRigidBody();
     TestRigidBodyAdvanced();
-    TestPhysicsWorld();
+    TestPhysicsWorld();*/
+    TestRenderer();
     return 0;
 }
