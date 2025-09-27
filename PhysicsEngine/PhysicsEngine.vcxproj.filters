@@ -46,6 +46,9 @@
       <Filter>File di origine</Filter>
     </ClCompile>
     <ClCompile Include="src\Physics\RigidBody.cpp">
+      <Filter>File di origine\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Physics\PhysicsWorld.cpp">
       <Filter>File di origine</Filter>
     </ClCompile>
   </ItemGroup>
@@ -54,6 +57,9 @@
       <Filter>File di intestazione\Math</Filter>
     </ClInclude>
     <ClInclude Include="include\Physics\RigidBody.h">
+      <Filter>File di intestazione\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Physics\PhysicsWorld.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
   </ItemGroup>

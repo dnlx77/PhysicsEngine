@@ -1,6 +1,7 @@
 ﻿#include <iostream>
 #include "Math/Vector2.h"
 #include "Physics/RigidBody.h"
+#include "Physics/PhysicsWorld.h"
 
 void TestVector2()
 {
@@ -152,10 +153,25 @@ void TestRigidBodyAdvanced()
     std::cout << "Rapporto velocità (dovrebbe essere ~100000): " << (lightBody.velocity.y / heavyBody.velocity.y) << std::endl;
 }
 
+void TestPhysicsWorld()
+{
+    PhysicsWorld world;
+
+    RigidBody *ball = world.CreateRigidBody(Vector2(0, 10), 2.0f);
+
+    // Simula 1 secondo
+    for (int i = 0; i < 60; i++) {
+        world.Update(1.0f / 60.0f);
+    }
+
+    std::cout << "Ball position: (" << ball->position.x << ", " << ball->position.y << ")" << std::endl;
+}
+
 int main()
 {
     TestVector2();
     TestRigidBody();
     TestRigidBodyAdvanced();
+    TestPhysicsWorld();
     return 0;
 }

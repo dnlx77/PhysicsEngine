@@ -19,12 +19,14 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Physics\PhysicsWorld.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Math\Vector2.cpp" />
     <ClCompile Include="src\Physics\RigidBody.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Math\Vector2.h" />
+    <ClInclude Include="include\Physics\PhysicsWorld.h" />
     <ClInclude Include="include\Physics\RigidBody.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
