@@ -60,6 +60,9 @@
     <ClCompile Include="src\Rendering\ConsoleRenderer.cpp">
       <Filter>File di origine\Rendering</Filter>
     </ClCompile>
+    <ClCompile Include="src\Collision\CollisionDetection.cpp">
+      <Filter>File di origine\Collision</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Math\Vector2.h">
@@ -73,6 +76,9 @@
     </ClInclude>
     <ClInclude Include="include\Rendering\ConsoleRenderer.h">
       <Filter>File di intestazione\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Collision\CollisionDetection.h">
+      <Filter>File di intestazione\Collision</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

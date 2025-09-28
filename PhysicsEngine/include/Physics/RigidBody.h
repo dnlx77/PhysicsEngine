@@ -15,6 +15,7 @@ public:
 
     // Proprietà fisiche
     float mass;
+    float radius;                  // Raggio del corpo
     float inverseMass;             // 1/mass per ottimizzazione
     float inertia;                 // Momento di inerzia
     float inverseInertia;          // 1/inertia per ottimizzazione
@@ -44,6 +45,7 @@ public:
 
     // Metodi per impostare proprietà
     void SetMass(float newMass);
+    void SetRadius(float newRadius);
     void SetInertia(float newInertia);
     void SetStatic(bool static_state);
 
@@ -62,5 +64,6 @@ public:
     bool IsStatic() const { return isStatic; }
     bool IsActive() const { return isActive; }
     float GetMass() const { return mass; }
+    float getRadius() const { return radius; }
     float GetInverseMass() const { return inverseMass; }
 };

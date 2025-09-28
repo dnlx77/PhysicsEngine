@@ -1,5 +1,6 @@
 #pragma once
 #include "Physics/RigidBody.h"
+#include "Collision/CollisionDetection.h"
 #include <vector>
 #include <memory>
 
@@ -9,6 +10,8 @@ private:
     Vector2 gravity;
     float fixedTimeStep;        // Timestep fisso per stabilità
     float timeAccumulator;      // Accumula tempo per timestep fisso
+
+    void ResolveCollision(const CollisionInfo &info);
 
 public:
     PhysicsWorld();

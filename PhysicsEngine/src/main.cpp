@@ -207,12 +207,98 @@ void TestRendererStatic()
     std::cin.get();
 }
 
+void TestCollisions()
+{
+    PhysicsWorld world;
+    ConsoleRenderer renderer(80, 24, 20.0f, 15.0f);
+
+    // Due palline che si sovrappongono
+    RigidBody *ball1 = world.CreateRigidBody(Vector2(9, 10), 1.0f);
+    RigidBody *ball2 = world.CreateRigidBody(Vector2(11, 10), 1.0f);
+
+    // Imposta raggi (default 1.0, quindi si sovrappongono)
+    ball1->radius = 1.5f;
+    ball2->radius = 1.5f;
+
+    // Velocità iniziali opposte
+    ball1->SetVelocity(Vector2(2, 0));
+    ball2->SetVelocity(Vector2(-2, 0));
+
+    for (int frame = 0; frame < 180; frame++) {  // 3 secondi
+        world.Update(1.0f / 60.0f);
+
+        renderer.Clear();
+        renderer.DrawWorld(world);
+        renderer.Present();
+
+        Sleep(50);  // Più lento per vedere bene
+    }
+}
+
+void TestBouncing()
+{
+    PhysicsWorld world;
+    ConsoleRenderer renderer(80, 24, 20.0f, 15.0f);
+
+    // Palla che rimbalza e pavimento statico
+    RigidBody *ball = world.CreateRigidBody(Vector2(10, 8), 1.0f);
+    RigidBody *ground = world.CreateRigidBody(Vector2(10, 0.5), 0.0f);  // Statico
+
+    ball->restitution = 0.8f;   // Rimbalzo elastico
+    ground->restitution = 0.8f;
+
+    ball->radius = 1.0f;
+    ground->radius = 0.5f;  // Pavimento "largo"
+
+    for (int frame = 0; frame < 600; frame++) {
+        world.Update(1.0f / 60.0f);
+
+        renderer.Clear();
+        renderer.DrawWorld(world);
+        renderer.Present();
+
+        Sleep(16);
+    }
+}
+
+void TestCompletePhysics()
+{
+    PhysicsWorld world;
+    ConsoleRenderer renderer(80, 24, 20.0f, 15.0f);
+
+    // Palla che cade
+    RigidBody *ball = world.CreateRigidBody(Vector2(10, 12), 1.0f);
+    ball->restitution = 0.7f;
+
+    // Pavimento
+    RigidBody *ground = world.CreateRigidBody(Vector2(10, 2), 0.0f);
+    ground->restitution = 0.8f;
+
+    // Altra palla per collision ball-ball
+    RigidBody *ball2 = world.CreateRigidBody(Vector2(12, 6), 0.5f);
+    ball2->SetVelocity(Vector2(-2, 1));
+
+    // Simula
+    for (int frame = 0; frame < 400; frame++) {
+        world.Update(1.0f / 60.0f);
+
+        renderer.Clear();
+        renderer.DrawWorld(world);
+        renderer.Present();
+
+        Sleep(16);
+    }
+}
+
 int main()
 {
     /*TestVector2();
     TestRigidBody();
     TestRigidBodyAdvanced();
-    TestPhysicsWorld();*/
+    TestPhysicsWorld();
     TestRenderer();
+    TestCollisions();
+    TestBouncing();*/
+    TestCompletePhysics();
     return 0;
 }
