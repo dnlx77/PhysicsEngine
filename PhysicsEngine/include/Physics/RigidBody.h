@@ -25,6 +25,7 @@ public:
     // Stato dell'oggetto
     bool isStatic;                 // true = massa infinita, non si muove
     bool isActive;                 // true = partecipa alla simulazione
+    bool isSleeping;               // true = non subisce la gravità
 
 private:
     // Accumulo delle forze
@@ -63,6 +64,7 @@ public:
     // Getters
     bool IsStatic() const { return isStatic; }
     bool IsActive() const { return isActive; }
+    bool IsSleeping() const { return isSleeping; }
     float GetMass() const { return mass; }
     float getRadius() const { return radius; }
     float GetInverseMass() const { return inverseMass; }

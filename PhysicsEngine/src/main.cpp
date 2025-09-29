@@ -4,6 +4,8 @@
 #include "Physics/RigidBody.h"
 #include "Physics/PhysicsWorld.h"
 #include "Rendering/ConsoleRenderer.h"
+#include "Rendering/SFMLRenderer.h"
+#include <SFML/Graphics.hpp>
 
 void TestVector2()
 {
@@ -290,6 +292,107 @@ void TestCompletePhysics()
     }
 }
 
+void TestSFML() {
+    sf::RenderWindow window(sf::VideoMode({ 800, 600 }), "Physics Engine");
+    sf::CircleShape circle(50);
+    circle.setFillColor(sf::Color::Red);
+
+    while (window.isOpen()) {
+        while (auto event = window.pollEvent()) {
+            if (event->is<sf::Event::Closed>()) {
+                window.close();
+            }
+        }
+
+        window.clear();
+        window.draw(circle);
+        window.display();
+    }
+}
+
+void TestSFMLBasic() {
+    sf::Time time = sf::seconds(1.0f);
+    std::cout << "SFML linking works! Time: " << time.asSeconds() << " seconds" << std::endl;
+}
+
+void TestSFMLPhysics() {
+    PhysicsWorld world;
+    SFMLRenderer renderer(800, 600, 20.0f, 15.0f, "Physics Engine - SFML");
+
+    // Palla che cade
+    RigidBody *ball = world.CreateRigidBody(Vector2(10, 12), 1.0f);
+    ball->restitution = 0.6f;
+
+    // Pavimento
+    RigidBody *ground = world.CreateRigidBody(Vector2(10, 2), 0.0f);
+    ground->restitution = 0.9f;
+
+    while (renderer.IsOpen()) {
+        renderer.HandleEvents();
+        world.Update(1.0f / 60.0f);
+
+        renderer.Clear();
+        renderer.DrawWorld(world);
+        renderer.Display();
+
+        Sleep(16);
+    }
+}
+
+void TestMultipleCollisions()
+{
+    PhysicsWorld world;
+    SFMLRenderer renderer(800, 600, 20.0f, 15.0f, "Physics Engine - Multiple Objects");
+
+    // Crea bordi statici (muri)
+    RigidBody *ground = world.CreateRigidBody(Vector2(10, 1), 0.0f);
+    ground->radius = 10.0f;
+    ground->restitution = 0.5f;
+
+    RigidBody *leftWall = world.CreateRigidBody(Vector2(1, 7.5f), 0.0f);
+    leftWall->radius = 1.0f;
+    leftWall->restitution = 0.5f;
+
+    RigidBody *rightWall = world.CreateRigidBody(Vector2(19, 7.5f), 0.0f);
+    rightWall->radius = 1.0f;
+    rightWall->restitution = 0.5f;
+
+    // Crea palline dinamiche in posizioni diverse
+    for (int i = 0; i < 8; i++) {
+        float x = 5.0f + (i % 4) * 3.0f;
+        float y = 8.0f + (i / 4) * 3.0f;
+
+        RigidBody *ball = world.CreateRigidBody(Vector2(x, y), 0.5f + (i * 0.1f));
+        ball->radius = 0.5f + (i * 0.05f);  // Raggi diversi
+        ball->restitution = 0.6f + (i * 0.03f);
+
+        // Velocità iniziali casuali
+        ball->SetVelocity(Vector2(
+            -2.0f + (i % 3),
+            -1.0f + (i % 2)
+        ));
+    }
+
+    // Aggiungi una palla grande centrale
+    RigidBody *bigBall = world.CreateRigidBody(Vector2(10, 10), 2.0f);
+    bigBall->radius = 1.5f;
+    bigBall->restitution = 0.7f;
+
+    // Loop principale
+    sf::Clock clock;
+    while (renderer.IsOpen()) {
+        renderer.HandleEvents();
+
+        // Aggiorna fisica
+        world.Update(1.0f / 60.0f);
+
+        // Rendering
+        renderer.Clear();
+        renderer.DrawWorld(world);
+        renderer.Display();
+    }
+}
+
 int main()
 {
     /*TestVector2();
@@ -298,7 +401,10 @@ int main()
     TestPhysicsWorld();
     TestRenderer();
     TestCollisions();
-    TestBouncing();*/
+    TestBouncing();
     TestCompletePhysics();
+    TestSFML();
+    TestSFMLPhysics();*/
+    TestMultipleCollisions();
     return 0;
 }

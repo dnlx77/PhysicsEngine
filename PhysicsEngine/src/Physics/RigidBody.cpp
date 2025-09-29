@@ -7,7 +7,7 @@ RigidBody::RigidBody()
     : position(Vector2::ZERO), velocity(Vector2::ZERO), acceleration(Vector2::ZERO),
     angle(0.0f), angularVelocity(0.0f), angularAcceleration(0.0f),
     mass(1.0f), radius(1.0f), inverseMass(1.0f), inertia(1.0f), inverseInertia(1.0f),
-    restitution(0.2f), friction(0.3f), isStatic(false), isActive(true),
+    restitution(0.2f), friction(0.3f), isStatic(false), isActive(true), isSleeping(false),
     forceAccumulator(Vector2::ZERO), torqueAccumulator(0.0f)
 {
 }
@@ -15,7 +15,7 @@ RigidBody::RigidBody()
 RigidBody::RigidBody(Vector2 pos, float mass)
     : position(pos), velocity(Vector2::ZERO), acceleration(Vector2::ZERO),
     angle(0.0f), angularVelocity(0.0f), angularAcceleration(0.0f),
-    radius(1.0f), restitution(0.2f), friction(0.3f), isStatic(false), isActive(true),
+    radius(1.0f), restitution(0.2f), friction(0.3f), isStatic(false), isActive(true), isSleeping(false),
     forceAccumulator(Vector2::ZERO), torqueAccumulator(0.0f)
 {
     SetMass(mass);
@@ -24,8 +24,10 @@ RigidBody::RigidBody(Vector2 pos, float mass)
 
 void RigidBody::ApplyForce(const Vector2 &force)
 {
-    if (!isStatic)
+    if (!isStatic) {
+        isSleeping = false;  // Risveglia quando riceve forze
         forceAccumulator += force;
+    }
 }
 
 void RigidBody::ApplyTorque(float torque)

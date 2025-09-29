@@ -5,10 +5,24 @@
 
 void PhysicsWorld::ResolveCollision(const CollisionInfo &info)
 {
-	std::cout << "Collision! Penetration: " << info.penetration
+	std::cout << "Collision! Penetration: " << info.penetration << " "
 		<< " Normal: (" << info.normal.x << ", " << info.normal.y << ")" << std::endl;
 
 	if (info.bodyA->IsStatic() && info.bodyB->IsStatic()) return;
+
+	// Step 2: Risoluzione velocità
+	// TODO: Calcola velocità relativa
+	Vector2 relativeVelocity = info.bodyB->velocity - info.bodyA->velocity;
+
+	// TODO: Velocità lungo la normale
+	float velocityAlongNormal = relativeVelocity.Dot(info.normal);
+
+	// Separazione con correction più forte
+	const float percent = 0.8f;  // Percentage da correggere (80%)
+	const float slop = 0.01f;    // Penetrazione permessa
+	float correctionAmount = std::max(info.penetration - slop, 0.0f) * percent;
+
+	if (velocityAlongNormal > 0) return;
 	
 	if (info.bodyA->IsStatic()) {
 		// BodyB è dinamico
@@ -24,24 +38,33 @@ void PhysicsWorld::ResolveCollision(const CollisionInfo &info)
 		info.bodyB->position += (info.normal * info.penetration) / 2;
 	}
 
-	// Step 2: Risoluzione velocità
-	// TODO: Calcola velocità relativa
-	Vector2 relativeVelocity = info.bodyB->velocity - info.bodyA->velocity;
+	// Applica l'impulso solo se si stanno avvicinando
+	if (velocityAlongNormal < 0) {
+		// TODO: Calcola impulso con restitution
+		float e = std::min(info.bodyA->restitution, info.bodyB->restitution); // Minimo tra i due coefficienti di restitution
+		float j = -1 * (1 + e) * velocityAlongNormal / (info.bodyA->inverseMass + info.bodyB->inverseMass); // Formula: -(1 + e) * velocityAlongNormal / (inverseMassA + inverseMassB)
 
-	// TODO: Velocità lungo la normale
-	float velocityAlongNormal = relativeVelocity.Dot(info.normal);
+		// TODO: Applica impulso
+		Vector2 impulse = info.normal * j;
+		info.bodyA->velocity -= impulse * info.bodyA->inverseMass;
+		info.bodyB->velocity += impulse * info.bodyB->inverseMass;
+	}
 
-	// TODO: Se si stanno già allontanando, non fare niente
-	if (velocityAlongNormal > 0) return;
-
-	// TODO: Calcola impulso con restitution
-	float e = std::min(info.bodyA->restitution, info.bodyB->restitution); // Minimo tra i due coefficienti di restitution
-	float j = -1 * (1 + e) * velocityAlongNormal / (info.bodyA->inverseMass + info.bodyB->inverseMass); // Formula: -(1 + e) * velocityAlongNormal / (inverseMassA + inverseMassB)
-
-	// TODO: Applica impulso
-	Vector2 impulse = info.normal * j;
-	info.bodyA->velocity -= impulse * info.bodyA->inverseMass;
-	info.bodyB->velocity += impulse * info.bodyB->inverseMass;
+	// Dopo aver applicato l'impulso, controlla se mettere a dormire
+	if (info.bodyB->IsStatic()) {
+		// BodyA collide con statico
+		if (info.bodyA->velocity.LengthSquared() < 0.05f && std::abs(velocityAlongNormal) < 0.1f) {
+			info.bodyA->isSleeping = true;
+			info.bodyA->velocity = Vector2::ZERO;
+		}
+	}
+	if (info.bodyA->IsStatic()) {
+		// BodyB collide con statico
+		if (info.bodyB->velocity.LengthSquared() < 0.05f && std::abs(velocityAlongNormal) < 0.1f) {
+			info.bodyB->isSleeping = true;
+			info.bodyB->velocity = Vector2::ZERO;
+		}
+	}
 }
 
 PhysicsWorld::PhysicsWorld() : gravity(Vector2(0.0f,-9.8f)), fixedTimeStep(1.0f / 60.0f), timeAccumulator(0.0f)
@@ -77,7 +100,7 @@ void PhysicsWorld::Step()
 {
 	// Applica la gravita a tutti i corpi
 	for (auto &body : bodies) {
-		if (!body->IsStatic()) {
+		if (!body->IsStatic() && !body->isSleeping) {
 			body->ApplyForce(gravity * body->GetMass());
 		}
 	}
