@@ -1,8 +1,15 @@
 #pragma once
 #include "Math/Vector2.h"
 
+enum class ShapeType {
+    CIRCLE,
+    AABB // Axis-Aligned Bounding Box
+};
+
 class RigidBody {
 public:
+    ShapeType shapeType;
+
     // Proprietà cinematiche
     Vector2 position;
     Vector2 velocity;
@@ -13,9 +20,15 @@ public:
     float angularVelocity;         // Velocità angolare
     float angularAcceleration;     // Accelerazione angolare
 
+    // Per cerchi
+    float radius;                  // Raggio del corpo
+
+    // PEr AABB
+    float width;                   // Larghezza del rettangolo
+    float height;                  // ALtezza del rettangolo
+
     // Proprietà fisiche
     float mass;
-    float radius;                  // Raggio del corpo
     float inverseMass;             // 1/mass per ottimizzazione
     float inertia;                 // Momento di inerzia
     float inverseInertia;          // 1/inertia per ottimizzazione
@@ -60,11 +73,16 @@ public:
     void SetVelocity(const Vector2 &vel);
     void SetAngle(float newAngle);
     void SetAngularVelocity(float newAngularVel);
+    void SetAABB(float w, float h);
 
     // Getters
     bool IsStatic() const { return isStatic; }
     bool IsActive() const { return isActive; }
     bool IsSleeping() const { return isSleeping; }
+    float GetMinX() const { return position.x - width / 2; }
+    float GetMaxX() const { return position.x + width / 2; }
+    float GetMinY() const { return position.y - height / 2; }
+    float GetMaxY() const { return position.y + height / 2; }
     float GetMass() const { return mass; }
     float getRadius() const { return radius; }
     float GetInverseMass() const { return inverseMass; }

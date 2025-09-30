@@ -13,4 +13,6 @@ class CollisionDetection {
 public:
     static bool CircleVsCircle(RigidBody *a, RigidBody *b, CollisionInfo &info);
     static bool CircleVsGround(RigidBody *circle, float groundY, CollisionInfo &info);
+    static bool CircleVsAABB(RigidBody *circle, RigidBody *aabb, CollisionInfo &info);
+    static bool AABBvsAABB(RigidBody *a, RigidBody *b, CollisionInfo &info);
 };

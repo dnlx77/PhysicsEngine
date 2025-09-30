@@ -27,16 +27,6 @@ sf::Vector2f SFMLRenderer::WorldToScreen(const Vector2 &worldPos)
 	return sf::Vector2f(x, y);
 }
 
-sf::CircleShape SFMLRenderer::CreateCircle(const RigidBody &body)
-{
-	float screenRadius = (window.getView().getSize().x / worldWidth) * body.radius;
-
-	sf::CircleShape circle(screenRadius);
-	circle.setFillColor(body.IsStatic() ? sf::Color::Color(128,128,128,255) : sf::Color::Blue);
-	circle.setOrigin(sf::Vector2f(screenRadius, screenRadius));
-	return circle;
-}
-
 void SFMLRenderer::HandleEvents()
 {
 	while (auto event = window.pollEvent()) {
@@ -48,11 +38,29 @@ void SFMLRenderer::HandleEvents()
 
 void SFMLRenderer::DrawWorld(const PhysicsWorld &world)
 {
-	const std::vector<std::unique_ptr<RigidBody>> &bodies = world.GetBodies();
-	for (const auto &body : bodies) {
-		sf::CircleShape circle = CreateCircle(*body);
-		sf::Vector2f screenPos = WorldToScreen(body->position);
-		circle.setPosition(screenPos);
-		window.draw(circle);
-	}
+    const std::vector<std::unique_ptr<RigidBody>> &bodies = world.GetBodies();
+
+    for (const auto &body : bodies) {
+        sf::Vector2f screenPos = WorldToScreen(body->position);
+
+        if (body->shapeType == ShapeType::CIRCLE) {
+            // Crea cerchio
+            float screenRadius = (window.getView().getSize().x / worldWidth) * body->radius;
+            sf::CircleShape circle(screenRadius);
+            circle.setOrigin(sf::Vector2f(screenRadius, screenRadius));
+            circle.setFillColor(body->IsStatic() ? sf::Color::Color(128, 128, 128, 255) : sf::Color::Blue);
+            circle.setPosition(screenPos);
+            window.draw(circle);
+        }
+        else if (body->shapeType == ShapeType::AABB) {
+            // Crea rettangolo
+            float screenWidth = (window.getView().getSize().x / worldWidth) * body->width;
+            float screenHeight = (window.getView().getSize().y / worldHeight) * body->height;
+            sf::RectangleShape rect(sf::Vector2f(screenWidth, screenHeight));
+            rect.setOrigin(sf::Vector2f(screenWidth / 2, screenHeight / 2));
+            rect.setFillColor(body->IsStatic() ? sf::Color::Color(128, 128, 128, 255) : sf::Color::Green);
+            rect.setPosition(screenPos);
+            window.draw(rect);
+        }
+    }
 }

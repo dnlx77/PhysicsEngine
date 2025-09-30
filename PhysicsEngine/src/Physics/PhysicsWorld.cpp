@@ -22,7 +22,7 @@ void PhysicsWorld::ResolveCollision(const CollisionInfo &info)
 	const float slop = 0.01f;    // Penetrazione permessa
 	float correctionAmount = std::max(info.penetration - slop, 0.0f) * percent;
 
-	if (velocityAlongNormal > 0) return;
+	//if (velocityAlongNormal > 0) return;
 	
 	if (info.bodyA->IsStatic()) {
 		// BodyB è dinamico
@@ -49,7 +49,7 @@ void PhysicsWorld::ResolveCollision(const CollisionInfo &info)
 		info.bodyA->velocity -= impulse * info.bodyA->inverseMass;
 		info.bodyB->velocity += impulse * info.bodyB->inverseMass;
 	}
-
+	/*
 	// Dopo aver applicato l'impulso, controlla se mettere a dormire
 	if (info.bodyB->IsStatic()) {
 		// BodyA collide con statico
@@ -64,7 +64,7 @@ void PhysicsWorld::ResolveCollision(const CollisionInfo &info)
 			info.bodyB->isSleeping = true;
 			info.bodyB->velocity = Vector2::ZERO;
 		}
-	}
+	}*/
 }
 
 PhysicsWorld::PhysicsWorld() : gravity(Vector2(0.0f,-9.8f)), fixedTimeStep(1.0f / 60.0f), timeAccumulator(0.0f)
@@ -114,8 +114,19 @@ void PhysicsWorld::Step()
 	for (size_t i = 0; i < bodies.size(); ++i) {
 		for (size_t j = i + 1; j < bodies.size(); ++j) {
 			CollisionInfo info;
-			if (CollisionDetection::CircleVsCircle(bodies[i].get(), bodies[j].get(), info)) {
-				// TODO: Risolvi la collisione
+			bool collided = false;
+
+			if (bodies[i]->shapeType == ShapeType::CIRCLE &&
+				bodies[j]->shapeType == ShapeType::CIRCLE) {
+				collided = CollisionDetection::CircleVsCircle(bodies[i].get(), bodies[j].get(), info);
+			}
+			else if (bodies[i]->shapeType == ShapeType::AABB &&
+				bodies[j]->shapeType == ShapeType::AABB) {
+				collided = CollisionDetection::AABBvsAABB(bodies[i].get(), bodies[j].get(), info);
+			}
+			// CircleVsAABB lo faremo dopo
+
+			if (collided) {
 				ResolveCollision(info);
 			}
 		}

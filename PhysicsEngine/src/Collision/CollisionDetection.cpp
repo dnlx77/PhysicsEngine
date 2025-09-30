@@ -29,3 +29,29 @@ bool CollisionDetection::CircleVsGround(RigidBody *circle, float groundY, Collis
 	}
 	return false;
 }
+
+bool CollisionDetection::AABBvsAABB(RigidBody *a, RigidBody *b, CollisionInfo &info)
+{
+	info.bodyA = a;
+	info.bodyB = b;
+	info.normal = Vector2::ZERO;
+	info.penetration = 0.0f;
+	info.hasCollision = false;
+
+	float XOverlap = std::fmin(a->GetMaxX() - b->GetMinX(), b->GetMaxX() - a->GetMinX());
+	float YOverlap = std::fmin(a->GetMaxY() - b->GetMinY(), b->GetMaxY() - a->GetMinY());
+
+	if (XOverlap <= 0 || YOverlap <= 0) return false;
+
+	if (XOverlap < YOverlap) {
+		info.normal = (a->position.x < b->position.x ? Vector2::RIGHT : Vector2::LEFT);
+		info.penetration = XOverlap;
+	}
+	else {
+		info.normal = (a->position.y < b->position.y ? Vector2::UP : Vector2::DOWN);
+		info.penetration = YOverlap;
+	}
+
+	info.hasCollision = true;
+	return true;
+}

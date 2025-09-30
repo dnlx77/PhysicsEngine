@@ -18,5 +18,4 @@ public:
 
 private:
     sf::Vector2f WorldToScreen(const Vector2 &worldPos);
-    sf::CircleShape CreateCircle(const RigidBody &body);
 };

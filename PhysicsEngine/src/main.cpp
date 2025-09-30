@@ -321,11 +321,11 @@ void TestSFMLPhysics() {
 
     // Palla che cade
     RigidBody *ball = world.CreateRigidBody(Vector2(10, 12), 1.0f);
-    ball->restitution = 0.6f;
+    ball->restitution = 0.8f;
 
     // Pavimento
     RigidBody *ground = world.CreateRigidBody(Vector2(10, 2), 0.0f);
-    ground->restitution = 0.9f;
+    ground->restitution = 0.8f;
 
     while (renderer.IsOpen()) {
         renderer.HandleEvents();
@@ -342,11 +342,12 @@ void TestSFMLPhysics() {
 void TestMultipleCollisions()
 {
     PhysicsWorld world;
+    world.SetGravity(Vector2(0.0f, -4.5f));
     SFMLRenderer renderer(800, 600, 20.0f, 15.0f, "Physics Engine - Multiple Objects");
 
     // Crea bordi statici (muri)
     RigidBody *ground = world.CreateRigidBody(Vector2(10, 1), 0.0f);
-    ground->radius = 10.0f;
+    ground->radius = 3.0f;
     ground->restitution = 0.5f;
 
     RigidBody *leftWall = world.CreateRigidBody(Vector2(1, 7.5f), 0.0f);
@@ -375,7 +376,7 @@ void TestMultipleCollisions()
 
     // Aggiungi una palla grande centrale
     RigidBody *bigBall = world.CreateRigidBody(Vector2(10, 10), 2.0f);
-    bigBall->radius = 1.5f;
+    bigBall->radius = 3.5f;
     bigBall->restitution = 0.7f;
 
     // Loop principale
@@ -390,6 +391,35 @@ void TestMultipleCollisions()
         renderer.Clear();
         renderer.DrawWorld(world);
         renderer.Display();
+
+        Sleep(80);
+    }
+}
+
+void TestAABB()
+{
+    PhysicsWorld world;
+    SFMLRenderer renderer(800, 600, 20.0f, 15.0f, "AABB Test");
+
+    // Crea un box che cade
+    RigidBody *box = world.CreateRigidBody(Vector2(10, 12), 1.0f);
+    box->SetAABB(2.0f, 2.0f);
+    box->restitution = 0.8f;
+
+    // Ground come AABB
+    RigidBody *ground = world.CreateRigidBody(Vector2(10, 2), 0.0f);
+    ground->SetAABB(15.0f, 1.0f);
+    ground->restitution = 0.8f;
+
+    while (renderer.IsOpen()) {
+        renderer.HandleEvents();
+        world.Update(1.0f / 60.0f);
+
+        renderer.Clear();
+        renderer.DrawWorld(world);
+        renderer.Display();
+
+        Sleep(50);
     }
 }
 
@@ -404,7 +434,8 @@ int main()
     TestBouncing();
     TestCompletePhysics();
     TestSFML();
-    TestSFMLPhysics();*/
-    TestMultipleCollisions();
+    TestSFMLPhysics();
+    TestMultipleCollisions();*/
+    TestAABB();
     return 0;
 }
