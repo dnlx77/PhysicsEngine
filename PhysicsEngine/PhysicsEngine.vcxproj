@@ -19,7 +19,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Collision\AABB.cpp" />
     <ClCompile Include="src\Collision\CollisionDetection.cpp" />
+    <ClCompile Include="src\Collision\QuadTree.cpp" />
     <ClCompile Include="src\Rendering\ConsoleRenderer.cpp" />
     <ClCompile Include="src\Physics\PhysicsWorld.cpp" />
     <ClCompile Include="src\main.cpp" />
@@ -28,7 +30,9 @@
     <ClCompile Include="src\Rendering\SFMLRenderer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\Collision\AABB.h" />
     <ClInclude Include="include\Collision\CollisionDetection.h" />
+    <ClInclude Include="include\Collision\QuadTree.h" />
     <ClInclude Include="include\Math\Vector2.h" />
     <ClInclude Include="include\Physics\PhysicsWorld.h" />
     <ClInclude Include="include\Physics\RigidBody.h" />
@@ -89,7 +93,7 @@
   <PropertyGroup Label="UserMacros" />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
@@ -121,7 +125,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>

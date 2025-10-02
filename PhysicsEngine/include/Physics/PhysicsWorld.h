@@ -1,6 +1,7 @@
 #pragma once
 #include "Physics/RigidBody.h"
 #include "Collision/CollisionDetection.h"
+#include "Collision/QuadTree.h"
 #include <vector>
 #include <memory>
 
@@ -12,9 +13,12 @@ private:
     float timeAccumulator;      // Accumula tempo per timestep fisso
 
     void ResolveCollision(const CollisionInfo &info);
+    AABB worldBounds;
+
 
 public:
     PhysicsWorld();
+    PhysicsWorld(const AABB &bounds);
 
     // Gestione RigidBody
     RigidBody *CreateRigidBody(const Vector2 &position, float mass);
