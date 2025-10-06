@@ -317,15 +317,16 @@ void TestSFMLBasic() {
 
 void TestSFMLPhysics() {
     PhysicsWorld world;
+    world.SetGravity(Vector2(0, -9.8f));
     SFMLRenderer renderer(800, 600, 20.0f, 15.0f, "Physics Engine - SFML");
 
     // Palla che cade
-    RigidBody *ball = world.CreateRigidBody(Vector2(10, 12), 1.0f);
-    ball->restitution = 0.8f;
+    RigidBody *ball = world.CreateRigidBody(Vector2(10, 7), 1.0f);
+    ball->restitution = 0.4f;
 
     // Pavimento
     RigidBody *ground = world.CreateRigidBody(Vector2(10, 2), 0.0f);
-    ground->restitution = 0.8f;
+    ground->restitution = 0.4f;
 
     while (renderer.IsOpen()) {
         renderer.HandleEvents();
@@ -392,7 +393,7 @@ void TestMultipleCollisions()
         renderer.DrawWorld(world);
         renderer.Display();
 
-        Sleep(80);
+        Sleep(16);
     }
 }
 
@@ -423,19 +424,73 @@ void TestAABB()
     }
 }
 
+void TestPBDStability() {
+    PhysicsWorld world;
+    SFMLRenderer renderer(800, 600, 20.0f, 15.0f, "PBD Stability Test");
+
+    // Pavimento
+    RigidBody *ground = world.CreateRigidBody(Vector2(10, 1), 0.0f);
+    ground->SetAABB(18.0f, 1.0f);
+
+    // Stack di cubi (il test più duro per stabilità!)
+    for (int i = 0; i < 10; i++) {
+        RigidBody *box = world.CreateRigidBody(Vector2(10, 3 + i * 1.1f), 1.0f);
+        box->SetAABB(1.0f, 1.0f);
+    }
+
+    while (renderer.IsOpen()) {
+        renderer.HandleEvents();
+        world.Update(1.0f / 60.0f);
+
+        renderer.Clear();
+        renderer.DrawWorld(world);
+        renderer.Display();
+
+        Sleep(16);
+    }
+}
+
+void TestCircleVsAABB() {
+    PhysicsWorld world;
+    world.SetGravity(Vector2(0, -9.8f));
+    SFMLRenderer renderer(800, 600, 20.0f, 15.0f, "Physics Engine - Circle vs AABB");
+
+    // Palla che cade
+    RigidBody *ball = world.CreateRigidBody(Vector2(10, 9), 1.0f);
+    ball->restitution = 0.6f;
+
+    // Pavimento
+    RigidBody *box = world.CreateRigidBody(Vector2(12, 2), 0.0f);
+    box->SetAABB(2.3f, 2.0f);
+    box->restitution = 0.6f;
+
+    while (renderer.IsOpen()) {
+        renderer.HandleEvents();
+        world.Update(1.0f / 60.0f);
+
+        renderer.Clear();
+        renderer.DrawWorld(world);
+        renderer.Display();
+
+        Sleep(26);
+    }
+}
+
 int main()
 {
-    /*TestVector2();
-    TestRigidBody();
-    TestRigidBodyAdvanced();
-    TestPhysicsWorld();
-    TestRenderer();
-    TestCollisions();
-    TestBouncing();
-    TestCompletePhysics();
-    TestSFML();
-    TestSFMLPhysics();
-    TestMultipleCollisions();*/
-    TestAABB();
+    //TestVector2();
+    //TestRigidBody();
+    //TestRigidBodyAdvanced();
+    //TestPhysicsWorld();
+    //TestRenderer();
+    //TestCollisions();
+    //TestBouncing();
+    //TestCompletePhysics();
+    //TestSFML();
+    //TestSFMLPhysics();
+    //TestMultipleCollisions();
+    //TestAABB();
+    //TestPBDStability();
+    TestCircleVsAABB();
     return 0;
 }

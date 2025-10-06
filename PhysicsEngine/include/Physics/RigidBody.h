@@ -8,12 +8,14 @@ enum class ShapeType {
 
 class RigidBody {
 public:
+    int id;  // NUOVO: identificatore unico
     ShapeType shapeType;
 
     // Proprietà cinematiche
     Vector2 position;
     Vector2 velocity;
     Vector2 acceleration;
+    Vector2 previousPosition; // Per Verlet/PBD integration
 
     // Proprietà rotazionali
     float angle;                   // Angolo in radianti
@@ -86,4 +88,6 @@ public:
     float GetMass() const { return mass; }
     float getRadius() const { return radius; }
     float GetInverseMass() const { return inverseMass; }
+
+    friend class PhysicsWorld;
 };

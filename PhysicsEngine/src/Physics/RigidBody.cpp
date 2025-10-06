@@ -4,22 +4,24 @@
 
 // Costruttori
 RigidBody::RigidBody()
-    : shapeType(ShapeType::CIRCLE), position(Vector2::ZERO), velocity(Vector2::ZERO), acceleration(Vector2::ZERO),
+    : id(-1), shapeType(ShapeType::CIRCLE), position(Vector2::ZERO), velocity(Vector2::ZERO), acceleration(Vector2::ZERO),
     angle(0.0f), angularVelocity(0.0f), angularAcceleration(0.0f),
     mass(1.0f), radius(1.0f), width(1.0f), height(1.0f), inverseMass(1.0f), inertia(1.0f), inverseInertia(1.0f),
     restitution(0.2f), friction(0.3f), isStatic(false), isActive(true), isSleeping(false),
     forceAccumulator(Vector2::ZERO), torqueAccumulator(0.0f)
 {
+    previousPosition = position;
 }
 
 RigidBody::RigidBody(Vector2 pos, float mass)
-    : shapeType(ShapeType::CIRCLE), position(pos), velocity(Vector2::ZERO), acceleration(Vector2::ZERO),
+    : id(-1), shapeType(ShapeType::CIRCLE), position(pos), velocity(Vector2::ZERO), acceleration(Vector2::ZERO),
     angle(0.0f), angularVelocity(0.0f), angularAcceleration(0.0f),
     radius(1.0f), width(1.0f), height(1.0f), restitution(0.2f), friction(0.3f), isStatic(false), isActive(true), isSleeping(false),
     forceAccumulator(Vector2::ZERO), torqueAccumulator(0.0f)
 {
     SetMass(mass);
     SetInertia(mass);  // Inerzia semplificata per iniziare
+    previousPosition = position;
 }
 
 void RigidBody::ApplyForce(const Vector2 &force)
@@ -109,6 +111,7 @@ void RigidBody::SetVelocity(const Vector2 &vel)
 {
     if (!isStatic) {
         velocity = vel;
+        previousPosition = position - velocity * 1.0f / 60.0f;
     }
 }
 

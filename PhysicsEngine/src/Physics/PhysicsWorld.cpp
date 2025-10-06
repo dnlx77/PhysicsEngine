@@ -1,139 +1,139 @@
-#include "Physics/PhysicsWorld.h"
+ï»¿#include "Physics/PhysicsWorld.h"
 #include "Collision/CollisionDetection.h"
-#include <algorithm>
-#include <iostream>
 
-void PhysicsWorld::ResolveCollision(const CollisionInfo &info)
-{
-	std::cout << "Collision! Penetration: " << info.penetration << " "
-		<< " Normal: (" << info.normal.x << ", " << info.normal.y << ")" << std::endl;
-
-	if (info.bodyA->IsStatic() && info.bodyB->IsStatic()) return;
-
-	// Step 2: Risoluzione velocità
-	// TODO: Calcola velocità relativa
-	Vector2 relativeVelocity = info.bodyB->velocity - info.bodyA->velocity;
-
-	// TODO: Velocità lungo la normale
-	float velocityAlongNormal = relativeVelocity.Dot(info.normal);
-
-	// Separazione con correction più forte
-	const float percent = 0.8f;  // Percentage da correggere (80%)
-	const float slop = 0.01f;    // Penetrazione permessa
-	float correctionAmount = std::max(info.penetration - slop, 0.0f) * percent;
-
-	//if (velocityAlongNormal > 0) return;
-	
-	if (info.bodyA->IsStatic()) {
-		// BodyB è dinamico
-		info.bodyB->position -= info.normal * info.penetration;
-	}
-	else if (info.bodyB->IsStatic()) {
-		// BodyA è dinamico
-		info.bodyA->position += info.normal * info.penetration;
-	}
-	else {
-		// Entrambi dinamici
-		info.bodyA->position -= (info.normal * info.penetration) / 2;
-		info.bodyB->position += (info.normal * info.penetration) / 2;
-	}
-
-	// Applica l'impulso solo se si stanno avvicinando
-	if (velocityAlongNormal < 0) {
-		// TODO: Calcola impulso con restitution
-		float e = std::min(info.bodyA->restitution, info.bodyB->restitution); // Minimo tra i due coefficienti di restitution
-		float j = -1 * (1 + e) * velocityAlongNormal / (info.bodyA->inverseMass + info.bodyB->inverseMass); // Formula: -(1 + e) * velocityAlongNormal / (inverseMassA + inverseMassB)
-
-		// TODO: Applica impulso
-		Vector2 impulse = info.normal * j;
-		info.bodyA->velocity -= impulse * info.bodyA->inverseMass;
-		info.bodyB->velocity += impulse * info.bodyB->inverseMass;
-	}
-	/*
-	// Dopo aver applicato l'impulso, controlla se mettere a dormire
-	if (info.bodyB->IsStatic()) {
-		// BodyA collide con statico
-		if (info.bodyA->velocity.LengthSquared() < 0.05f && std::abs(velocityAlongNormal) < 0.1f) {
-			info.bodyA->isSleeping = true;
-			info.bodyA->velocity = Vector2::ZERO;
-		}
-	}
-	if (info.bodyA->IsStatic()) {
-		// BodyB collide con statico
-		if (info.bodyB->velocity.LengthSquared() < 0.05f && std::abs(velocityAlongNormal) < 0.1f) {
-			info.bodyB->isSleeping = true;
-			info.bodyB->velocity = Vector2::ZERO;
-		}
-	}*/
-}
-
-PhysicsWorld::PhysicsWorld() : gravity(Vector2(0.0f,-9.8f)), fixedTimeStep(1.0f / 60.0f), timeAccumulator(0.0f)
+PhysicsWorld::PhysicsWorld()
+    : gravity(Vector2(0.0f, -9.8f)),
+    fixedTimeStep(1.0f / 60.0f),
+    timeAccumulator(0.0f),
+    nextBodyId(0)
 {
 }
 
 RigidBody *PhysicsWorld::CreateRigidBody(const Vector2 &position, float mass)
 {
-	bodies.emplace_back(std::make_unique<RigidBody>(position, mass));
-	return bodies.back().get();
+    bodies.emplace_back(std::make_unique<RigidBody>(position, mass));
+    bodies.back()->id = nextBodyId++;
+    return bodies.back().get();
 }
 
 void PhysicsWorld::SetGravity(const Vector2 &g)
 {
-	gravity = g;
+    gravity = g;
 }
 
 void PhysicsWorld::SetTimeStep(float timeStep)
 {
-	fixedTimeStep = timeStep;
+    fixedTimeStep = timeStep;
 }
 
 void PhysicsWorld::Update(float deltaTime)
 {
-	timeAccumulator += deltaTime;
-	while (timeAccumulator >= fixedTimeStep) {
-		Step();
-		timeAccumulator -= fixedTimeStep;
-	}
+    timeAccumulator += deltaTime;
+    while (timeAccumulator >= fixedTimeStep) {
+        Step();
+        timeAccumulator -= fixedTimeStep;
+    }
 }
 
 void PhysicsWorld::Step()
 {
-	// Applica la gravita a tutti i corpi
-	for (auto &body : bodies) {
-		if (!body->IsStatic() && !body->isSleeping) {
-			body->ApplyForce(gravity * body->GetMass());
-		}
-	}
+    // Predizione: applica forze e aggiorna posizioni
+    for (auto &body : bodies) {
+        if (body->IsStatic() || !body->isActive)
+            continue;
 
-	// Integra tutti i corpi
-	for (auto &body : bodies) {
-		body->Integrate(fixedTimeStep);
-	}
+        body->previousPosition = body->position;
+        Vector2 acceleration = gravity + (body->forceAccumulator * body->inverseMass);
+        body->velocity += acceleration * fixedTimeStep;
+        body->position += body->velocity * fixedTimeStep;
+    }
 
-	// Collision detection
-	for (size_t i = 0; i < bodies.size(); ++i) {
-		for (size_t j = i + 1; j < bodies.size(); ++j) {
-			CollisionInfo info;
-			bool collided = false;
+    // Constraint solver: risolvi sovrapposizioni iterativamente
+    std::vector<CollisionInfo> collisions;
+    const int solverIterations = 5;
 
-			if (bodies[i]->shapeType == ShapeType::CIRCLE &&
-				bodies[j]->shapeType == ShapeType::CIRCLE) {
-				collided = CollisionDetection::CircleVsCircle(bodies[i].get(), bodies[j].get(), info);
-			}
-			else if (bodies[i]->shapeType == ShapeType::AABB &&
-				bodies[j]->shapeType == ShapeType::AABB) {
-				collided = CollisionDetection::AABBvsAABB(bodies[i].get(), bodies[j].get(), info);
-			}
-			// CircleVsAABB lo faremo dopo
+    for (int iteration = 0; iteration < solverIterations; iteration++) {
+        for (size_t i = 0; i < bodies.size(); ++i) {
+            for (size_t j = i + 1; j < bodies.size(); ++j) {
+                CollisionInfo info;
+                bool collided = DetectCollision(bodies[i].get(), bodies[j].get(), info);
 
-			if (collided) {
-				ResolveCollision(info);
-			}
-		}
-	}
+                if (collided) {
+                    if (iteration == 0) {
+                        collisions.push_back(info);
+                    }
+                    SolvePositionConstraint(info);
+                }
+            }
+        }
+    }
 
-	// Pulisce le forze
-	for (auto &body : bodies) {
-		body->ClearForces();
-	}
+    // Applica restituzione (rimbalzi)
+    ApplyRestitution(collisions);
+
+    // Aggiorna previousPosition per mantenere coerenza
+    for (auto &body : bodies) {
+        if (body->IsStatic() || !body->isActive)
+            continue;
+        body->previousPosition = body->position - body->velocity * fixedTimeStep;
+    }
+
+    // Pulisci forze accumulate
+    for (auto &body : bodies) {
+        body->ClearForces();
+    }
+}
+
+bool PhysicsWorld::DetectCollision(RigidBody *a, RigidBody *b, CollisionInfo &info)
+{
+    if (a->shapeType == ShapeType::CIRCLE && b->shapeType == ShapeType::CIRCLE) {
+        return CollisionDetection::CircleVsCircle(a, b, info);
+    }
+    else if (a->shapeType == ShapeType::AABB && b->shapeType == ShapeType::AABB) {
+        return CollisionDetection::AABBvsAABB(a, b, info);
+    }
+    else {
+        if (a->shapeType == ShapeType::CIRCLE)
+            return CollisionDetection::CircleVsAABB(a, b, info);
+        else
+            return CollisionDetection::CircleVsAABB(b, a, info);
+    }
+    return false;
+}
+
+void PhysicsWorld::SolvePositionConstraint(const CollisionInfo &info)
+{
+    if (info.bodyA->isStatic && info.bodyB->isStatic)
+        return;
+
+    float totalInverseMass = info.bodyA->inverseMass + info.bodyB->inverseMass;
+    if (totalInverseMass == 0.0f)
+        return;
+
+    float correctionA = (info.bodyA->inverseMass / totalInverseMass) * info.penetration;
+    float correctionB = (info.bodyB->inverseMass / totalInverseMass) * info.penetration;
+
+    info.bodyA->position -= info.normal * correctionA;
+    info.bodyB->position += info.normal * correctionB;
+}
+
+void PhysicsWorld::ApplyRestitution(const std::vector<CollisionInfo> &collisions)
+{
+    const float velocityThreshold = 0.01f;
+
+    for (const auto &collision : collisions) {
+        Vector2 relativeVelocity = collision.bodyB->velocity - collision.bodyA->velocity;
+        float velocityAlongNormal = relativeVelocity.Dot(collision.normal);
+
+        // Applica solo se si stanno avvicinando
+        if (velocityAlongNormal < -velocityThreshold) {
+            float e = std::min(collision.bodyA->restitution, collision.bodyB->restitution);
+            float totalInvMass = collision.bodyA->inverseMass + collision.bodyB->inverseMass;
+            float j = -(1.0f + e) * velocityAlongNormal / totalInvMass;
+            Vector2 impulse = collision.normal * j;
+
+            collision.bodyA->velocity -= impulse * collision.bodyA->inverseMass;
+            collision.bodyB->velocity += impulse * collision.bodyB->inverseMass;
+        }
+    }
 }

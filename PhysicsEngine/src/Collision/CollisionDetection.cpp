@@ -1,13 +1,18 @@
 #include "Collision/CollisionDetection.h"
+#include <algorithm>
 
 bool CollisionDetection::CircleVsCircle(RigidBody *a, RigidBody *b, CollisionInfo &info)
 {
 	float distance = Vector2::Distance(a->position, b->position);
-	if (distance < (a->radius + b->radius)) {
+	float penetration = (a->radius + b->radius) - distance;
+
+	const float collisionThreshold = 0.001f;  // NUOVO: ignora micro-sovrapposizioni
+
+	if (penetration > collisionThreshold) {  // Cambiato da > 0
 		info.bodyA = a;
 		info.bodyB = b;
 		info.normal = (b->position - a->position).Normalized();
-		info.penetration = (a->radius + b->radius) - distance;
+		info.penetration = penetration;
 		info.hasCollision = true;
 		return true;
 	}
@@ -27,6 +32,34 @@ bool CollisionDetection::CircleVsGround(RigidBody *circle, float groundY, Collis
 		info.penetration = groundY - (circle->position.y - circle->radius);
 		return true;
 	}
+	return false;
+}
+
+bool CollisionDetection::CircleVsAABB(RigidBody *circle, RigidBody *aabb, CollisionInfo &info)
+{
+	info.bodyA = circle;
+	info.bodyB = aabb;
+	float XOverlap = std::clamp(circle->position.x, aabb->GetMinX(), aabb->GetMaxX());
+	float YOverlap = std::clamp(circle->position.y, aabb->GetMinY(), aabb->GetMaxY());
+	Vector2 point(XOverlap, YOverlap);
+	float distance = Vector2::Distance(circle->position, point);
+
+	if (distance < circle->radius) {
+		if (distance < 1e-6f) {
+			info.normal = Vector2::UP;
+		}
+		else {
+			info.normal = (point - circle->position).Normalized();
+		}
+
+		info.penetration = circle->radius - distance;
+		info.hasCollision = true;
+		return true;
+	}
+
+	info.normal = Vector2::ZERO;
+	info.penetration = 0.0f;
+	info.hasCollision = false;
 	return false;
 }
 
