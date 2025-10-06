@@ -1,5 +1,4 @@
 #include "Collision/CollisionDetection.h"
-#include <algorithm>
 
 bool CollisionDetection::CircleVsCircle(RigidBody *a, RigidBody *b, CollisionInfo &info)
 {
@@ -51,45 +50,6 @@ bool CollisionDetection::AABBvsAABB(RigidBody *a, RigidBody *b, CollisionInfo &i
 	else {
 		info.normal = (a->position.y < b->position.y ? Vector2::UP : Vector2::DOWN);
 		info.penetration = YOverlap;
-	}
-
-	info.hasCollision = true;
-	return true;
-}
-
-bool CollisionDetection::CircleVsAABB(RigidBody *circle, RigidBody *aabb, CollisionInfo &info)
-{
-	info.bodyA = circle;
-	info.bodyB = aabb;
-
-	// Trova il punto più vicino sull'AABB al centro del cerchio
-	float closestX = std::clamp(circle->position.x, aabb->GetMinX(), aabb->GetMaxX());
-	float closestY = std::clamp(circle->position.y, aabb->GetMinY(), aabb->GetMaxY());
-
-	Vector2 closest(closestX, closestY);
-
-	// Calcola distanza tra punto più vicino e centro cerchio
-	Vector2 difference = circle->position - closest;
-	float distanceSquared = difference.LengthSquared();
-
-	// Se distanza > radius, nessuna collisione
-	if (distanceSquared > circle->radius * circle->radius) {
-		info.hasCollision = false;
-		return false;
-	}
-
-	float distance = std::sqrt(distanceSquared);
-
-	// Calcola normale e penetrazione
-	if (distance > 1e-6f) {
-		info.normal = difference.Normalized();
-		info.penetration = circle->radius - distance;
-	}
-	else {
-		// Cerchio è esattamente sul punto più vicino (caso raro)
-		// Usa normale basata sulla posizione relativa
-		info.normal = (circle->position.x > aabb->position.x) ? Vector2::RIGHT : Vector2::LEFT;
-		info.penetration = circle->radius;
 	}
 
 	info.hasCollision = true;

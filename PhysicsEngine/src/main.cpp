@@ -423,94 +423,6 @@ void TestAABB()
     }
 }
 
-void TestMixedShapes()
-{
-    PhysicsWorld world;
-    SFMLRenderer renderer(800, 600, 20.0f, 15.0f, "Mixed Shapes Test");
-
-    // Pavimento AABB
-    RigidBody *ground = world.CreateRigidBody(Vector2(10, 1), 0.0f);
-    ground->SetAABB(18.0f, 1.0f);
-    ground->restitution = 0.8f;
-
-    // Muri laterali AABB
-    RigidBody *leftWall = world.CreateRigidBody(Vector2(1, 7.5f), 0.0f);
-    leftWall->SetAABB(1.0f, 15.0f);
-
-    RigidBody *rightWall = world.CreateRigidBody(Vector2(19, 7.5f), 0.0f);
-    rightWall->SetAABB(1.0f, 15.0f);
-
-    // Piattaforme AABB
-    RigidBody *platform1 = world.CreateRigidBody(Vector2(5, 5), 0.0f);
-    platform1->SetAABB(4.0f, 0.5f);
-    platform1->restitution = 0.8f;
-
-    RigidBody *platform2 = world.CreateRigidBody(Vector2(15, 8), 0.0f);
-    platform2->SetAABB(4.0f, 0.5f);
-    platform2->restitution = 0.8f;
-
-    // Cerchi che cadono
-    for (int i = 0; i < 5; i++) {
-        RigidBody *ball = world.CreateRigidBody(Vector2(6 + i * 2, 12 - i), 0.5f);
-        ball->radius = 0.5f;
-        ball->restitution = 0.8f;
-        ball->SetVelocity(Vector2((i % 2 == 0 ? 1 : -1) * 2, 0));
-    }
-
-    // Box che cadono
-    for (int i = 0; i < 3; i++) {
-        RigidBody *box = world.CreateRigidBody(Vector2(8 + i * 3, 10 + i), 1.0f);
-        box->SetAABB(1.0f, 1.0f);
-        box->restitution = 0.8f;
-    }
-
-    while (renderer.IsOpen()) {
-        renderer.HandleEvents();
-        world.Update(1.0f / 60.0f);
-
-        renderer.Clear();
-        renderer.DrawWorld(world);
-        renderer.Display();
-
-        Sleep(45);
-    }
-}
-
-void TestQuadTreePerformance()
-{
-    PhysicsWorld world;
-    SFMLRenderer renderer(800, 600, 20.0f, 15.0f, "QuadTree Performance Test");
-
-    // Crea MOLTI oggetti (100+)
-    for (int i = 0; i < 500; i++) {
-        float x = 2 + (rand() % 16);
-        float y = 2 + (rand() % 12);
-
-        RigidBody *ball = world.CreateRigidBody(Vector2(x, y), 0.5f);
-        ball->radius = 0.3f;
-        ball->restitution = 0.6f;
-        ball->SetVelocity(Vector2(
-            -3 + (rand() % 6),
-            -3 + (rand() % 6)
-        ));
-    }
-
-    // Muri
-    RigidBody *ground = world.CreateRigidBody(Vector2(10, 1), 0.0f);
-    ground->SetAABB(18.0f, 1.0f);
-
-    while (renderer.IsOpen()) {
-        renderer.HandleEvents();
-        world.Update(1.0f / 60.0f);
-
-        renderer.Clear();
-        renderer.DrawWorld(world);
-        renderer.Display();
-
-        //Sleep(16);
-    }
-}
-
 int main()
 {
     /*TestVector2();
@@ -523,9 +435,7 @@ int main()
     TestCompletePhysics();
     TestSFML();
     TestSFMLPhysics();
-    TestMultipleCollisions();
+    TestMultipleCollisions();*/
     TestAABB();
-    TestMixedShapes();*/
-    TestQuadTreePerformance();
     return 0;
 }

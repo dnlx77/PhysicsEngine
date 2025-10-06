@@ -67,11 +67,7 @@ void PhysicsWorld::ResolveCollision(const CollisionInfo &info)
 	}*/
 }
 
-PhysicsWorld::PhysicsWorld() : gravity(Vector2(0.0f,-9.8f)), fixedTimeStep(1.0f / 60.0f), timeAccumulator(0.0f), worldBounds(Vector2(10,7.5f), 10.0f, 7.5f)
-{
-}
-
-PhysicsWorld::PhysicsWorld(const AABB &bounds) : gravity(Vector2(0.0f, -9.8f)), fixedTimeStep(1.0f / 60.0f), timeAccumulator(0.0f), worldBounds(bounds)
+PhysicsWorld::PhysicsWorld() : gravity(Vector2(0.0f,-9.8f)), fixedTimeStep(1.0f / 60.0f), timeAccumulator(0.0f)
 {
 }
 
@@ -114,17 +110,9 @@ void PhysicsWorld::Step()
 		body->Integrate(fixedTimeStep);
 	}
 
-	QuadTree tree(worldBounds, 4); // capacity = 4
-	for (auto &body : bodies) {
-		tree.Insert(body.get());
-	}
-
-	/*
 	// Collision detection
-	int collisionChecks = 0;
 	for (size_t i = 0; i < bodies.size(); ++i) {
 		for (size_t j = i + 1; j < bodies.size(); ++j) {
-			collisionChecks++;
 			CollisionInfo info;
 			bool collided = false;
 
@@ -136,69 +124,14 @@ void PhysicsWorld::Step()
 				bodies[j]->shapeType == ShapeType::AABB) {
 				collided = CollisionDetection::AABBvsAABB(bodies[i].get(), bodies[j].get(), info);
 			}
-			else {
-				// Uno è cerchio, l'altro AABB - assicurati che circle sia primo argomento
-				RigidBody *circle = (bodies[i]->shapeType == ShapeType::CIRCLE) ? bodies[i].get() : bodies[j].get();
-				RigidBody *box = (bodies[i]->shapeType == ShapeType::AABB) ? bodies[i].get() : bodies[j].get();
-				collided = CollisionDetection::CircleVsAABB(circle, box, info);
-			}
+			// CircleVsAABB lo faremo dopo
 
 			if (collided) {
 				ResolveCollision(info);
 			}
 		}
-		std::cout << "Collision checks: " << collisionChecks << std::endl;
-	}*/
-	
-	// collision detection con QuadTree
-	int collisionChecks = 0;
-	for (size_t i = 0; i < bodies.size(); ++i) {
-		// Query area intorno al body
-		float searchHalfWidth = (bodies[i]->shapeType == ShapeType::CIRCLE)
-			? bodies[i]->radius * 2
-			: bodies[i]->width;
-
-		float searchHalfHeight = (bodies[i]->shapeType == ShapeType::CIRCLE)
-			? bodies[i]->radius * 2
-			: bodies[i]->height;
-
-		AABB searchArea(bodies[i]->position,
-			searchHalfWidth,
-			searchHalfHeight);
-
-		std::vector<RigidBody *> candidates;
-		tree.Query(searchArea, candidates);
-
-		// Check collision solo con candidati
-		for (auto *other : candidates) {
-			collisionChecks++;
-			CollisionInfo info;
-			bool collided = false;
-
-			if (bodies[i].get() == other) continue; // skip se stesso
-
-			if (bodies[i]->shapeType == ShapeType::CIRCLE &&
-				other->shapeType == ShapeType::CIRCLE) {
-				collided = CollisionDetection::CircleVsCircle(bodies[i].get(), other, info);
-			}
-			else if (bodies[i]->shapeType == ShapeType::AABB &&
-				other->shapeType == ShapeType::AABB) {
-				collided = CollisionDetection::AABBvsAABB(bodies[i].get(), other, info);
-			}
-			else {
-				// Uno è cerchio, l'altro AABB - assicurati che circle sia primo argomento
-				RigidBody *circle = (bodies[i]->shapeType == ShapeType::CIRCLE) ? bodies[i].get() : other;
-				RigidBody *box = (bodies[i]->shapeType == ShapeType::AABB) ? bodies[i].get() : other;
-				collided = CollisionDetection::CircleVsAABB(circle, box, info);
-			}
-
-			if (collided) {
-				ResolveCollision(info);
-			}
-		}
-		std::cout << "Collision checks: " << collisionChecks << std::endl;
-
 	}
+
 	// Pulisce le forze
 	for (auto &body : bodies) {
 		body->ClearForces();

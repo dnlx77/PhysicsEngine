@@ -66,12 +66,6 @@
     <ClCompile Include="src\Rendering\SFMLRenderer.cpp">
       <Filter>File di origine\Rendering</Filter>
     </ClCompile>
-    <ClCompile Include="src\Collision\AABB.cpp">
-      <Filter>File di origine\Collision</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Collision\QuadTree.cpp">
-      <Filter>File di origine\Collision</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Math\Vector2.h">
@@ -91,12 +85,6 @@
     </ClInclude>
     <ClInclude Include="include\Rendering\SFMLRenderer.h">
       <Filter>File di intestazione\Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="include\Collision\AABB.h">
-      <Filter>File di intestazione\Collision</Filter>
-    </ClInclude>
-    <ClInclude Include="include\Collision\QuadTree.h">
-      <Filter>File di intestazione\Collision</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
