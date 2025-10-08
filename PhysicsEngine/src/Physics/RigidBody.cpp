@@ -1,10 +1,10 @@
-#include "Physics/RigidBody.h"
+﻿#include "Physics/RigidBody.h"
 #include <cmath>
 #include <algorithm>
 
 // Costruttori
 RigidBody::RigidBody()
-    : id(-1), shapeType(ShapeType::CIRCLE), position(Vector2::ZERO), velocity(Vector2::ZERO), acceleration(Vector2::ZERO),
+    : shapeType(ShapeType::CIRCLE), position(Vector2::ZERO), velocity(Vector2::ZERO), acceleration(Vector2::ZERO),
     angle(0.0f), angularVelocity(0.0f), angularAcceleration(0.0f),
     mass(1.0f), radius(1.0f), width(1.0f), height(1.0f), inverseMass(1.0f), inertia(1.0f), inverseInertia(1.0f),
     restitution(0.2f), friction(0.3f), isStatic(false), isActive(true), isSleeping(false),
@@ -14,7 +14,7 @@ RigidBody::RigidBody()
 }
 
 RigidBody::RigidBody(Vector2 pos, float mass)
-    : id(-1), shapeType(ShapeType::CIRCLE), position(pos), velocity(Vector2::ZERO), acceleration(Vector2::ZERO),
+    : shapeType(ShapeType::CIRCLE), position(pos), velocity(Vector2::ZERO), acceleration(Vector2::ZERO),
     angle(0.0f), angularVelocity(0.0f), angularAcceleration(0.0f),
     radius(1.0f), width(1.0f), height(1.0f), restitution(0.2f), friction(0.3f), isStatic(false), isActive(true), isSleeping(false),
     forceAccumulator(Vector2::ZERO), torqueAccumulator(0.0f)
@@ -50,7 +50,7 @@ void RigidBody::SetMass(float newMass)
     else {
         mass = newMass;
         inverseMass = 1.0f / mass;
-        // Non modifichiamo isStatic qui - pu� essere impostato separatamente
+        // Non modifichiamo isStatic qui - può essere impostato separatamente
     }
 }
 
@@ -133,4 +133,11 @@ void RigidBody::SetAABB(float w, float h)
     shapeType = ShapeType::AABB;
     width = w;
     height = h;
+}
+
+void RigidBody::UpdateVelocityFromPosition(const Vector2 &oldPosition, float dt)
+{
+    if (dt > 1e-6f) {  // 🎯 Safety check aggiunto!
+        velocity = (position - oldPosition) / dt;
+    }
 }

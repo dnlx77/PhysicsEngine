@@ -13,6 +13,7 @@ public:
     bool IsOpen() const;
     void HandleEvents();
     void Clear();
+    void DrawLine(const Vector2 &start, const Vector2 &end, sf::Color color = sf::Color::White);
     void DrawWorld(const PhysicsWorld &world);
     void Display();
 

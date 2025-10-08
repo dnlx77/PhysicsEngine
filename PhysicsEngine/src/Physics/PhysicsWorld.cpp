@@ -4,15 +4,13 @@
 PhysicsWorld::PhysicsWorld()
     : gravity(Vector2(0.0f, -9.8f)),
     fixedTimeStep(1.0f / 60.0f),
-    timeAccumulator(0.0f),
-    nextBodyId(0)
+    timeAccumulator(0.0f)
 {
 }
 
 RigidBody *PhysicsWorld::CreateRigidBody(const Vector2 &position, float mass)
 {
     bodies.emplace_back(std::make_unique<RigidBody>(position, mass));
-    bodies.back()->id = nextBodyId++;
     return bodies.back().get();
 }
 

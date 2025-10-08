@@ -5,6 +5,7 @@
 #include "Physics/PhysicsWorld.h"
 #include "Rendering/ConsoleRenderer.h"
 #include "Rendering/SFMLRenderer.h"
+#include "Constraints/DistanceConstraints.h"
 #include <SFML/Graphics.hpp>
 
 void TestVector2()
@@ -457,11 +458,11 @@ void TestCircleVsAABB() {
 
     // Palla che cade
     RigidBody *ball = world.CreateRigidBody(Vector2(10, 9), 1.0f);
-    ball->restitution = 0.6f;
+    ball->restitution = 0.1f;
 
     // Pavimento
     RigidBody *box = world.CreateRigidBody(Vector2(12, 2), 0.0f);
-    box->SetAABB(2.3f, 2.0f);
+    box->SetAABB(2.6f, 1.0f);
     box->restitution = 0.6f;
 
     while (renderer.IsOpen()) {
@@ -473,6 +474,141 @@ void TestCircleVsAABB() {
         renderer.Display();
 
         Sleep(26);
+    }
+}
+
+void TestDistanceConstraint()
+{
+    PhysicsWorld world;
+    SFMLRenderer renderer(800, 600, 20.0f, 15.0f, "Distance Constraint Test");
+
+    // Crea due particelle
+    RigidBody *anchor = world.CreateRigidBody(Vector2(10, 12), 0.0f);
+    RigidBody *hanging = world.CreateRigidBody(Vector2(10, 8), 1.0f);
+
+    anchor->radius = 0.3f;
+    hanging->radius = 0.3f;
+
+    // 🤔 Crea il constraint qui
+    // DistanceConstraint constraint(???, ???, ???);
+    DistanceConstraint rope(anchor, hanging, 0.5f);
+
+    while (renderer.IsOpen()) {
+        renderer.HandleEvents();
+
+        // 🤔 Dove chiamiamo constraint.Solve()?
+
+        world.Update(1.0f / 60.0f);
+
+        for (int i=0 ; i<10 ; i++)
+            rope.Solve();
+
+        renderer.Clear();
+        renderer.DrawWorld(world);
+
+        // 🤔 Come disegniamo la linea del constraint?
+        // Disegna il constraint
+        if (rope.IsValid()) {
+            renderer.DrawLine(
+                rope.GetParticleA()->position,
+                rope.GetParticleB()->position,
+                sf::Color::Yellow  // Linea gialla
+            );
+        }
+
+        renderer.Display();
+        Sleep(16);
+    }
+}
+
+void TestChain()
+{
+    PhysicsWorld world;
+    SFMLRenderer renderer(800, 600, 20.0f, 15.0f, "Chain Test");
+
+    std::vector<RigidBody *> particles;
+    std::vector<DistanceConstraint> constraints;
+
+    // 🤔 Step 1: Crea l'ancoraggio (particella statica)
+    // Posizione: (10, 13), massa: 0.0f (statico)
+    // radius: 0.3f
+    // Aggiungi a particles
+
+    RigidBody *anchor = world.CreateRigidBody(Vector2(10, 13), 0.0f);
+    anchor->SetRadius(0.3f);
+    particles.emplace_back(anchor);
+
+
+    // 🤔 Step 2: Crea 7 particelle dinamiche in loop
+    // for (int i = 1; i <= 7; i++)
+    // Posizione Y diminuisce: (10, 13 - i * 0.8)
+    // massa: 0.5f
+    // radius: 0.25f
+    // Aggiungi a particles
+
+    for (int i = 1; i <= 7; i++) {
+        RigidBody *chainElement = world.CreateRigidBody(Vector2(10, 13 - i * 0.8f), 0.5f);
+        chainElement->SetRadius(0.25f);
+        particles.emplace_back(chainElement);
+    }
+
+
+    // 🤔 Step 3: Crea i constraint in loop
+    // for (int i = 0; i < particles.size() - 1; i++)
+    // Collega particles[i] con particles[i+1]
+    // stiffness: 1.0f
+    // Usa emplace_back per costruire direttamente nel vector
+
+    for (int i = 0; i < particles.size() - 1; i++) {
+        constraints.emplace_back(DistanceConstraint(particles[i], particles[i + 1], 1.0f));
+    }
+
+
+    // Main loop
+    while (renderer.IsOpen()) {
+        renderer.HandleEvents();
+
+        // Salva posizioni prima dell'update
+        std::vector<Vector2> oldPositions;
+        for (auto *p : particles) {
+            oldPositions.push_back(p->position);
+        }
+
+        world.Update(1.0f / 60.0f);
+
+        // 🤔 Step 4: Risolvi tutti i constraint
+        // for (auto &c : constraints)
+
+        for (int iteration = 0; iteration < 1; iteration++) {
+            for (auto &c : constraints)
+                c.Solve();
+        }
+
+        // Update velocities
+        for (size_t i = 0; i < particles.size(); i++) {
+            particles[i]->UpdateVelocityFromPosition(oldPositions[i], 1.0f / 60.0f);
+        }
+
+        renderer.Clear();
+        renderer.DrawWorld(world);
+
+        // 🤔 Step 5: Disegna tutte le linee
+        // for (auto &c : constraints)
+        //     if (c.IsValid())
+        //         renderer.DrawLine(...)
+
+        for (auto &c : constraints) {
+            if (c.IsValid()) {
+                renderer.DrawLine(
+                    c.GetParticleA()->position,
+                    c.GetParticleB()->position,
+                    sf::Color::Yellow  // Linea gialla
+                );
+            }
+        }
+
+        renderer.Display();
+        Sleep(16);
     }
 }
 
@@ -491,6 +627,8 @@ int main()
     //TestMultipleCollisions();
     //TestAABB();
     //TestPBDStability();
-    TestCircleVsAABB();
+    //TestCircleVsAABB();
+    //TestDistanceConstraint();
+    TestChain();
     return 0;
 }

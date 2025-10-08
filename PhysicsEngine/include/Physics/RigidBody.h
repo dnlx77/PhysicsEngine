@@ -8,7 +8,6 @@ enum class ShapeType {
 
 class RigidBody {
 public:
-    int id;  // NUOVO: identificatore unico
     ShapeType shapeType;
 
     // Proprietà cinematiche
@@ -76,6 +75,7 @@ public:
     void SetAngle(float newAngle);
     void SetAngularVelocity(float newAngularVel);
     void SetAABB(float w, float h);
+    void UpdateVelocityFromPosition(const Vector2 &oldPosition, float dt);
 
     // Getters
     bool IsStatic() const { return isStatic; }

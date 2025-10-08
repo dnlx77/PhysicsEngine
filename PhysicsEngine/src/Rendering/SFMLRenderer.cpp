@@ -15,6 +15,19 @@ void SFMLRenderer::Clear()
 	window.clear();
 }
 
+void SFMLRenderer::DrawLine(const Vector2 &start, const Vector2 &end, sf::Color color)
+{
+    sf::Vector2f screenStart = WorldToScreen(start);
+    sf::Vector2f screenEnd = WorldToScreen(end);
+
+    sf::Vertex line[] = {
+        sf::Vertex(screenStart, color),
+        sf::Vertex(screenEnd, color)
+    };
+
+    window.draw(line, 2, sf::PrimitiveType::Lines);
+}
+
 void SFMLRenderer::Display()
 {
 	window.display();

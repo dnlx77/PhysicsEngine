@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Constraints\DistanceConstraints.cpp" />
     <ClCompile Include="src\Collision\CollisionDetection.cpp" />
     <ClCompile Include="src\Rendering\ConsoleRenderer.cpp" />
     <ClCompile Include="src\Physics\PhysicsWorld.cpp" />
@@ -29,6 +30,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Collision\CollisionDetection.h" />
+    <ClInclude Include="include\Constraints\DistanceConstraints.h" />
     <ClInclude Include="include\Math\Vector2.h" />
     <ClInclude Include="include\Physics\PhysicsWorld.h" />
     <ClInclude Include="include\Physics\RigidBody.h" />

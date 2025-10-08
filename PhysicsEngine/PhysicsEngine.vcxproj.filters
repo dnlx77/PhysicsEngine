@@ -43,6 +43,12 @@
     <Filter Include="File di origine\Rendering">
       <UniqueIdentifier>{455caaae-aba6-4bec-9d19-721c7643cf9b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="File di intestazione\Constraints">
+      <UniqueIdentifier>{3dc74279-0953-481f-ab04-39e95dd1f15e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="File di origine\Constraints">
+      <UniqueIdentifier>{37dfcdb4-7a7b-49c2-8a44-6cc2fecad128}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Math\Vector2.cpp">
@@ -66,6 +72,9 @@
     <ClCompile Include="src\Rendering\SFMLRenderer.cpp">
       <Filter>File di origine\Rendering</Filter>
     </ClCompile>
+    <ClCompile Include="src\Constraints\DistanceConstraints.cpp">
+      <Filter>File di origine\Constraints</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Math\Vector2.h">
@@ -85,6 +94,9 @@
     </ClInclude>
     <ClInclude Include="include\Rendering\SFMLRenderer.h">
       <Filter>File di intestazione\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Constraints\DistanceConstraints.h">
+      <Filter>File di intestazione\Constraints</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

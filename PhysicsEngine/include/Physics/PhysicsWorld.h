@@ -7,7 +7,7 @@
 
 class PhysicsWorld {
 private:
-    int nextBodyId = 0;  // NUOVO: contatore ID
+    //int nextBodyId = 0;  // NUOVO: contatore ID
     std::vector<std::unique_ptr<RigidBody>> bodies;
     Vector2 gravity;
     float fixedTimeStep;        // Timestep fisso per stabilità
