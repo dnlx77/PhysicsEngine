@@ -41,4 +41,5 @@ public:
     // Utility
     size_t GetBodyCount() const { return bodies.size(); }
     const std::vector<std::unique_ptr<RigidBody>> &GetBodies() const { return bodies; }
+    float GetFixedTimeStep() const { return fixedTimeStep; }
 };

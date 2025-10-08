@@ -1,5 +1,6 @@
 ﻿#include "Physics/PhysicsWorld.h"
 #include "Collision/CollisionDetection.h"
+#include <iostream>
 
 PhysicsWorld::PhysicsWorld()
     : gravity(Vector2(0.0f, -9.8f)),
@@ -35,20 +36,24 @@ void PhysicsWorld::Update(float deltaTime)
 
 void PhysicsWorld::Step()
 {
-    // Predizione: applica forze e aggiorna posizioni
+    // 1. Applica gravità a tutti i corpi dinamici
+    for (auto &body : bodies) {
+        if (!body->IsStatic() && body->isActive) {
+            body->ApplyForce(gravity * body->mass);
+        }
+    }
+
+    // 2. Integra movimento (Verlet)
     for (auto &body : bodies) {
         if (body->IsStatic() || !body->isActive)
             continue;
 
-        body->previousPosition = body->position;
-        Vector2 acceleration = gravity + (body->forceAccumulator * body->inverseMass);
-        body->velocity += acceleration * fixedTimeStep;
-        body->position += body->velocity * fixedTimeStep;
+        body->Integrate(fixedTimeStep);
     }
 
-    // Constraint solver: risolvi sovrapposizioni iterativamente
+    // 3. Risolvi collisioni (position constraints)
     std::vector<CollisionInfo> collisions;
-    const int solverIterations = 5;
+    const int solverIterations = 20;
 
     for (int iteration = 0; iteration < solverIterations; iteration++) {
         for (size_t i = 0; i < bodies.size(); ++i) {
@@ -66,17 +71,10 @@ void PhysicsWorld::Step()
         }
     }
 
-    // Applica restituzione (rimbalzi)
+    // 4. Applica restituzione (rimbalzi)
     ApplyRestitution(collisions);
 
-    // Aggiorna previousPosition per mantenere coerenza
-    for (auto &body : bodies) {
-        if (body->IsStatic() || !body->isActive)
-            continue;
-        body->previousPosition = body->position - body->velocity * fixedTimeStep;
-    }
-
-    // Pulisci forze accumulate
+    // 5. Pulisci forze accumulate
     for (auto &body : bodies) {
         body->ClearForces();
     }
@@ -111,27 +109,49 @@ void PhysicsWorld::SolvePositionConstraint(const CollisionInfo &info)
     float correctionA = (info.bodyA->inverseMass / totalInverseMass) * info.penetration;
     float correctionB = (info.bodyB->inverseMass / totalInverseMass) * info.penetration;
 
-    info.bodyA->position -= info.normal * correctionA;
-    info.bodyB->position += info.normal * correctionB;
+    Vector2 correctionVecA = info.normal * correctionA;
+    Vector2 correctionVecB = info.normal * correctionB;
+
+    // 🎯 Aggiorna ENTRAMBI position E oldPosition
+    if (!info.bodyA->isStatic) {
+        info.bodyA->position -= correctionVecA;
+        info.bodyA->oldPosition -= correctionVecA;  // ✅ Mantiene velocità!
+    }
+
+    if (!info.bodyB->isStatic) {
+        info.bodyB->position += correctionVecB;
+        info.bodyB->oldPosition += correctionVecB;  // ✅ Mantiene velocità!
+    }
 }
 
 void PhysicsWorld::ApplyRestitution(const std::vector<CollisionInfo> &collisions)
 {
-    const float velocityThreshold = 0.01f;
+    for (const auto &info : collisions) {
+        RigidBody *bodyA = info.bodyA;
+        RigidBody *bodyB = info.bodyB;
 
-    for (const auto &collision : collisions) {
-        Vector2 relativeVelocity = collision.bodyB->velocity - collision.bodyA->velocity;
-        float velocityAlongNormal = relativeVelocity.Dot(collision.normal);
+        Vector2 velA = (bodyA->position - bodyA->oldPosition) / fixedTimeStep;
+        Vector2 velB = (bodyB->position - bodyB->oldPosition) / fixedTimeStep;
 
-        // Applica solo se si stanno avvicinando
-        if (velocityAlongNormal < -velocityThreshold) {
-            float e = std::min(collision.bodyA->restitution, collision.bodyB->restitution);
-            float totalInvMass = collision.bodyA->inverseMass + collision.bodyB->inverseMass;
-            float j = -(1.0f + e) * velocityAlongNormal / totalInvMass;
-            Vector2 impulse = collision.normal * j;
+        Vector2 relativeVelocity = velB - velA;
+        float velocityAlongNormal = relativeVelocity.Dot(info.normal);
 
-            collision.bodyA->velocity -= impulse * collision.bodyA->inverseMass;
-            collision.bodyB->velocity += impulse * collision.bodyB->inverseMass;
+        if (velocityAlongNormal > 0)
+            continue;
+
+        float restitution = std::min(bodyA->restitution, bodyB->restitution);
+        float j = -(1.0f + restitution) * velocityAlongNormal;
+        j /= (bodyA->inverseMass + bodyB->inverseMass);
+
+        Vector2 impulse = info.normal * j;
+
+        // 🎯 CORREZIONE DEFINITIVA: Segni ORIGINALI erano giusti!
+        if (!bodyA->IsStatic()) {
+            bodyA->oldPosition += impulse * bodyA->inverseMass * fixedTimeStep;  // ✅
+        }
+
+        if (!bodyB->IsStatic()) {
+            bodyB->oldPosition -= impulse * bodyB->inverseMass * fixedTimeStep;  // ✅
         }
     }
 }

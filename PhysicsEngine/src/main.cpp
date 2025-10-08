@@ -322,14 +322,15 @@ void TestSFMLPhysics() {
     SFMLRenderer renderer(800, 600, 20.0f, 15.0f, "Physics Engine - SFML");
 
     // Palla che cade
-    RigidBody *ball = world.CreateRigidBody(Vector2(10, 7), 1.0f);
-    ball->restitution = 0.4f;
+    RigidBody *ball = world.CreateRigidBody(Vector2(10, 5), 1.0f);
+    ball->restitution = 0.8f;
 
     // Pavimento
     RigidBody *ground = world.CreateRigidBody(Vector2(10, 2), 0.0f);
-    ground->restitution = 0.4f;
+    ground->restitution = 0.8f;
 
     while (renderer.IsOpen()) {
+        
         renderer.HandleEvents();
         world.Update(1.0f / 60.0f);
 
@@ -579,14 +580,9 @@ void TestChain()
         // 🤔 Step 4: Risolvi tutti i constraint
         // for (auto &c : constraints)
 
-        for (int iteration = 0; iteration < 1; iteration++) {
+        for (int iteration = 0; iteration < 5; iteration++) {
             for (auto &c : constraints)
                 c.Solve();
-        }
-
-        // Update velocities
-        for (size_t i = 0; i < particles.size(); i++) {
-            particles[i]->UpdateVelocityFromPosition(oldPositions[i], 1.0f / 60.0f);
         }
 
         renderer.Clear();
@@ -626,9 +622,9 @@ int main()
     //TestSFMLPhysics();
     //TestMultipleCollisions();
     //TestAABB();
-    //TestPBDStability();
+    TestPBDStability();
     //TestCircleVsAABB();
     //TestDistanceConstraint();
-    TestChain();
+    //TestChain();
     return 0;
 }

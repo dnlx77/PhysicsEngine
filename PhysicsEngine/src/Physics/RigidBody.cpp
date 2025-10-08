@@ -10,7 +10,7 @@ RigidBody::RigidBody()
     restitution(0.2f), friction(0.3f), isStatic(false), isActive(true), isSleeping(false),
     forceAccumulator(Vector2::ZERO), torqueAccumulator(0.0f)
 {
-    previousPosition = position;
+    oldPosition = position;
 }
 
 RigidBody::RigidBody(Vector2 pos, float mass)
@@ -21,7 +21,7 @@ RigidBody::RigidBody(Vector2 pos, float mass)
 {
     SetMass(mass);
     SetInertia(mass);  // Inerzia semplificata per iniziare
-    previousPosition = position;
+    oldPosition = position;
 }
 
 void RigidBody::ApplyForce(const Vector2 &force)
@@ -80,20 +80,30 @@ void RigidBody::SetStatic(bool static_state)
     }
 }
 
-void RigidBody::Integrate(float deltaTime)
+void RigidBody::Integrate(float dt)
 {
-    if (isStatic || !isActive)
-        return;
+    if (IsStatic()) return;
 
-    // Traslazione
-    acceleration = forceAccumulator * inverseMass;
-    velocity += acceleration * deltaTime;
-    position += velocity * deltaTime;
+    // 🎯 VERLET INTEGRATION
+    Vector2 acceleration = forceAccumulator * inverseMass;
 
-    // Rotazione
-    angularAcceleration = torqueAccumulator * inverseInertia;
-    angularVelocity += angularAcceleration * deltaTime;
-    angle += angularVelocity * deltaTime;
+    // Salva posizione corrente
+    Vector2 temp = position;
+
+    // Verlet: newPos = pos + (pos - oldPos) + acc * dt²
+    position = position + (position - oldPosition) + acceleration * (dt * dt);
+
+    // Update oldPosition
+    oldPosition = temp;
+
+    // Calcola velocità (per collision response e debug)
+    if (dt > 1e-6f) {
+        velocity = (position - oldPosition) / dt;
+    }
+
+    // TODO: Gestione rotazione (dopo)
+    // angularVelocity += torque * inverseInertia * dt;
+    // angle += angularVelocity * dt;
 }
 
 void RigidBody::ClearForces()
@@ -111,7 +121,7 @@ void RigidBody::SetVelocity(const Vector2 &vel)
 {
     if (!isStatic) {
         velocity = vel;
-        previousPosition = position - velocity * 1.0f / 60.0f;
+        oldPosition = position - velocity * (1.0f / 60.0f);
     }
 }
 

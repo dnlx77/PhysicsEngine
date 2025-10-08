@@ -14,7 +14,6 @@ public:
     Vector2 position;
     Vector2 velocity;
     Vector2 acceleration;
-    Vector2 previousPosition; // Per Verlet/PBD integration
 
     // Proprietà rotazionali
     float angle;                   // Angolo in radianti
@@ -45,6 +44,8 @@ private:
     // Accumulo delle forze
     Vector2 forceAccumulator;      // Somma di tutte le forze applicate
     float torqueAccumulator;       // Somma di tutti i momenti applicati
+public:
+    Vector2 oldPosition;           // Posizione precedente per verlet
 
 public:
     // Costruttori
