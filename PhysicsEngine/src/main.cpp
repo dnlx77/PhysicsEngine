@@ -608,6 +608,92 @@ void TestChain()
     }
 }
 
+void TestWeb()
+{
+    PhysicsWorld world;
+    SFMLRenderer renderer(800, 600, 20.0f, 15.0f, "Web Test");
+
+    const int gridWidth = 8;
+    const int gridHeight = 6;
+
+    std::vector<std::vector<RigidBody *>> grid(gridHeight, std::vector<RigidBody *>(gridWidth));
+    std::vector<DistanceConstraint> constraints;
+
+    // Crea particelle
+    float startX = 6.0f;
+    float startY = 12.0f;
+    float spacing = 1.0f;
+
+    for (int row = 0; row < gridHeight; row++) {
+        for (int col = 0; col < gridWidth; col++) {
+            float x = startX + col * spacing;
+            float y = startY - row * spacing;
+
+            bool isEdge = (row == 0 && (col == 0 || col == gridWidth - 1));
+            RigidBody *particle = world.CreateRigidBody(Vector2(x, y), isEdge ? 0.0f : 0.3f);
+            particle->radius = 0.15f;
+            grid[row][col] = particle;
+        }
+    }
+
+    // Constraint ORIZZONTALI
+    for (int row = 0; row < gridHeight; row++) {
+        for (int col = 0; col < gridWidth - 1; col++) {
+            constraints.emplace_back(grid[row][col], grid[row][col + 1], 0.5f);
+        }
+    }
+
+    // Constraint VERTICALI (✅ CORRETTO)
+    for (int row = 0; row < gridHeight - 1; row++) {
+        for (int col = 0; col < gridWidth; col++) {
+            constraints.emplace_back(grid[row][col], grid[row + 1][col], 0.5f);
+        }
+    }
+
+    // Constraint DIAGONALI
+    for (int row = 0; row < gridHeight - 1; row++) {
+        for (int col = 0; col < gridWidth - 1; col++) {
+            constraints.emplace_back(grid[row][col], grid[row + 1][col + 1], 0.5f);
+            constraints.emplace_back(grid[row][col + 1], grid[row + 1][col], 0.5f);
+        }
+    }
+
+    // Palla pesante
+    RigidBody *ball = world.CreateRigidBody(Vector2(10, 14), 8.0f);
+    ball->radius = 0.5f;
+    ball->restitution = 0.6f;
+
+    // Main loop
+    while (renderer.IsOpen()) {
+        renderer.HandleEvents();
+        world.Update(1.0f / 60.0f);
+
+        // Risolvi constraint
+        for (int iteration = 0; iteration < 2; iteration++) {
+            for (auto &c : constraints) {
+                c.Solve();
+            }
+        }
+
+        renderer.Clear();
+        renderer.DrawWorld(world);
+
+        // Disegna rete
+        for (auto &c : constraints) {
+            if (c.IsValid()) {
+                renderer.DrawLine(
+                    c.GetParticleA()->position,
+                    c.GetParticleB()->position,
+                    sf::Color(100, 100, 100)
+                );
+            }
+        }
+
+        renderer.Display();
+        //Sleep(16);
+    }
+}
+
 int main()
 {
     //TestVector2();
@@ -622,9 +708,10 @@ int main()
     //TestSFMLPhysics();
     //TestMultipleCollisions();
     //TestAABB();
-    TestPBDStability();
+    //TestPBDStability();
     //TestCircleVsAABB();
     //TestDistanceConstraint();
     //TestChain();
+    TestWeb();
     return 0;
 }
