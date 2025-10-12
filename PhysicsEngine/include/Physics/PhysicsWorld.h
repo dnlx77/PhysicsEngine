@@ -1,6 +1,7 @@
 #pragma once
 #include "Physics/RigidBody.h"
 #include "Collision/CollisionDetection.h"
+#include "Constraints/DistanceConstraints.h"
 #include <vector>
 #include <memory>
 #include <set>
@@ -9,6 +10,7 @@ class PhysicsWorld {
 private:
     //int nextBodyId = 0;  // NUOVO: contatore ID
     std::vector<std::unique_ptr<RigidBody>> bodies;
+    std::vector<std::unique_ptr<DistanceConstraint>> constraints;
     Vector2 gravity;
     float fixedTimeStep;        // Timestep fisso per stabilità
     float timeAccumulator;      // Accumula tempo per timestep fisso
@@ -24,6 +26,7 @@ public:
 
     // Gestione RigidBody
     RigidBody *CreateRigidBody(const Vector2 &position, float mass);
+    DistanceConstraint *CreateDistanceConstraint(RigidBody *bodyA, RigidBody *bodyB, float stif);
     void RemoveRigidBody(RigidBody *body);
     void Clear();
 
@@ -41,5 +44,6 @@ public:
     // Utility
     size_t GetBodyCount() const { return bodies.size(); }
     const std::vector<std::unique_ptr<RigidBody>> &GetBodies() const { return bodies; }
+    const std::vector<std::unique_ptr<DistanceConstraint>> &GetConstraints() const { return constraints; }
     float GetFixedTimeStep() const { return fixedTimeStep; }
 };

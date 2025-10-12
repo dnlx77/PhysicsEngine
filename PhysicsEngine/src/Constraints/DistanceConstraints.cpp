@@ -14,7 +14,7 @@ void DistanceConstraint::Solve()
 	float currentLength = delta.Length();
 	float error = currentLength - restLength;
 
-	std::cout << "Error: " << error << " | Length: " << currentLength << " | Rest: " << restLength << std::endl;
+	//std::cout << "Error: " << error << " | Length: " << currentLength << " | Rest: " << restLength << std::endl;
 
 	if (std::abs(error) < 1e-6f) return;
 

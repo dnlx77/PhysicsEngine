@@ -323,11 +323,11 @@ void TestSFMLPhysics() {
 
     // Palla che cade
     RigidBody *ball = world.CreateRigidBody(Vector2(10, 5), 1.0f);
-    ball->restitution = 0.8f;
+    ball->restitution = 1.0f;
 
     // Pavimento
     RigidBody *ground = world.CreateRigidBody(Vector2(10, 2), 0.0f);
-    ground->restitution = 0.8f;
+    ground->restitution = 1.0f;
 
     while (renderer.IsOpen()) {
         
@@ -492,7 +492,7 @@ void TestDistanceConstraint()
 
     // 🤔 Crea il constraint qui
     // DistanceConstraint constraint(???, ???, ???);
-    DistanceConstraint rope(anchor, hanging, 0.5f);
+    world.CreateDistanceConstraint(anchor, hanging, 0.5f);
 
     while (renderer.IsOpen()) {
         renderer.HandleEvents();
@@ -501,21 +501,8 @@ void TestDistanceConstraint()
 
         world.Update(1.0f / 60.0f);
 
-        for (int i=0 ; i<10 ; i++)
-            rope.Solve();
-
         renderer.Clear();
         renderer.DrawWorld(world);
-
-        // 🤔 Come disegniamo la linea del constraint?
-        // Disegna il constraint
-        if (rope.IsValid()) {
-            renderer.DrawLine(
-                rope.GetParticleA()->position,
-                rope.GetParticleB()->position,
-                sf::Color::Yellow  // Linea gialla
-            );
-        }
 
         renderer.Display();
         Sleep(16);
@@ -561,7 +548,7 @@ void TestChain()
     // Usa emplace_back per costruire direttamente nel vector
 
     for (int i = 0; i < particles.size() - 1; i++) {
-        constraints.emplace_back(DistanceConstraint(particles[i], particles[i + 1], 1.0f));
+        world.CreateDistanceConstraint(particles[i], particles[i + 1], 1.0f);
     }
 
 
@@ -588,21 +575,6 @@ void TestChain()
         renderer.Clear();
         renderer.DrawWorld(world);
 
-        // 🤔 Step 5: Disegna tutte le linee
-        // for (auto &c : constraints)
-        //     if (c.IsValid())
-        //         renderer.DrawLine(...)
-
-        for (auto &c : constraints) {
-            if (c.IsValid()) {
-                renderer.DrawLine(
-                    c.GetParticleA()->position,
-                    c.GetParticleB()->position,
-                    sf::Color::Yellow  // Linea gialla
-                );
-            }
-        }
-
         renderer.Display();
         Sleep(16);
     }
@@ -613,11 +585,11 @@ void TestWeb()
     PhysicsWorld world;
     SFMLRenderer renderer(800, 600, 20.0f, 15.0f, "Web Test");
 
-    const int gridWidth = 8;
-    const int gridHeight = 6;
+    const int gridWidth = 12;
+    const int gridHeight = 8;
 
     std::vector<std::vector<RigidBody *>> grid(gridHeight, std::vector<RigidBody *>(gridWidth));
-    std::vector<DistanceConstraint> constraints;
+    //std::vector<DistanceConstraint> constraints;
 
     // Crea particelle
     float startX = 6.0f;
@@ -639,58 +611,41 @@ void TestWeb()
     // Constraint ORIZZONTALI
     for (int row = 0; row < gridHeight; row++) {
         for (int col = 0; col < gridWidth - 1; col++) {
-            constraints.emplace_back(grid[row][col], grid[row][col + 1], 0.5f);
+            world.CreateDistanceConstraint(grid[row][col], grid[row][col + 1], 0.3f);
         }
     }
 
     // Constraint VERTICALI (✅ CORRETTO)
     for (int row = 0; row < gridHeight - 1; row++) {
         for (int col = 0; col < gridWidth; col++) {
-            constraints.emplace_back(grid[row][col], grid[row + 1][col], 0.5f);
+            world.CreateDistanceConstraint(grid[row][col], grid[row + 1][col], 0.2f);
         }
     }
-
+    
     // Constraint DIAGONALI
     for (int row = 0; row < gridHeight - 1; row++) {
         for (int col = 0; col < gridWidth - 1; col++) {
-            constraints.emplace_back(grid[row][col], grid[row + 1][col + 1], 0.5f);
-            constraints.emplace_back(grid[row][col + 1], grid[row + 1][col], 0.5f);
+            world.CreateDistanceConstraint(grid[row][col], grid[row + 1][col + 1], 0.1f);
+            world.CreateDistanceConstraint(grid[row][col + 1], grid[row + 1][col], 0.1f);
         }
     }
-
+    
     // Palla pesante
-    RigidBody *ball = world.CreateRigidBody(Vector2(10, 14), 8.0f);
+    RigidBody *ball = world.CreateRigidBody(Vector2(10, 14), 2.0f);
     ball->radius = 0.5f;
     ball->restitution = 0.6f;
+    
 
     // Main loop
     while (renderer.IsOpen()) {
         renderer.HandleEvents();
         world.Update(1.0f / 60.0f);
 
-        // Risolvi constraint
-        for (int iteration = 0; iteration < 2; iteration++) {
-            for (auto &c : constraints) {
-                c.Solve();
-            }
-        }
-
         renderer.Clear();
         renderer.DrawWorld(world);
 
-        // Disegna rete
-        for (auto &c : constraints) {
-            if (c.IsValid()) {
-                renderer.DrawLine(
-                    c.GetParticleA()->position,
-                    c.GetParticleB()->position,
-                    sf::Color(100, 100, 100)
-                );
-            }
-        }
-
+        Sleep(16);
         renderer.Display();
-        //Sleep(16);
     }
 }
 

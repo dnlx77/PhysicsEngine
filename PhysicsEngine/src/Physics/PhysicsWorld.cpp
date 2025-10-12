@@ -15,6 +15,12 @@ RigidBody *PhysicsWorld::CreateRigidBody(const Vector2 &position, float mass)
     return bodies.back().get();
 }
 
+DistanceConstraint *PhysicsWorld::CreateDistanceConstraint(RigidBody *bodyA, RigidBody *bodyB, float stif)
+{
+    constraints.emplace_back(std::make_unique<DistanceConstraint>(bodyA, bodyB, stif));
+    return constraints.back().get();
+}
+
 void PhysicsWorld::SetGravity(const Vector2 &g)
 {
     gravity = g;
@@ -53,7 +59,7 @@ void PhysicsWorld::Step()
 
     // 3. Risolvi collisioni (position constraints)
     std::vector<CollisionInfo> collisions;
-    const int solverIterations = 20;
+    const int solverIterations = 5;
 
     for (int iteration = 0; iteration < solverIterations; iteration++) {
         for (size_t i = 0; i < bodies.size(); ++i) {
@@ -68,6 +74,10 @@ void PhysicsWorld::Step()
                     SolvePositionConstraint(info);
                 }
             }
+        }
+
+        for (auto &constraint : constraints) {
+            constraint->Solve();
         }
     }
 

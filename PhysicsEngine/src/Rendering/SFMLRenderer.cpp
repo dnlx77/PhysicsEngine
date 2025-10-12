@@ -51,8 +51,9 @@ void SFMLRenderer::HandleEvents()
 
 void SFMLRenderer::DrawWorld(const PhysicsWorld &world)
 {
-    const std::vector<std::unique_ptr<RigidBody>> &bodies = world.GetBodies();
+    const auto &bodies = world.GetBodies();
 
+    // Disegna bodies
     for (const auto &body : bodies) {
         sf::Vector2f screenPos = WorldToScreen(body->position);
 
@@ -74,6 +75,18 @@ void SFMLRenderer::DrawWorld(const PhysicsWorld &world)
             rect.setFillColor(body->IsStatic() ? sf::Color::Color(128, 128, 128, 255) : sf::Color::Green);
             rect.setPosition(screenPos);
             window.draw(rect);
+        }
+    }
+
+    // Disegna constraints
+    const auto &constraints = world.GetConstraints();
+    for (const auto &c : constraints) {
+        if (c->IsValid()) {
+            DrawLine(
+                c->GetParticleA()->position,
+                c->GetParticleB()->position,
+                sf::Color(100, 100, 100)
+            );
         }
     }
 }
