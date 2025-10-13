@@ -6,6 +6,7 @@
 #include "Rendering/ConsoleRenderer.h"
 #include "Rendering/SFMLRenderer.h"
 #include "Constraints/DistanceConstraints.h"
+#include "Input/MouseHandler.h"
 #include <SFML/Graphics.hpp>
 
 void TestVector2()
@@ -631,7 +632,7 @@ void TestWeb()
     }
     
     // Palla pesante
-    RigidBody *ball = world.CreateRigidBody(Vector2(10, 14), 2.0f);
+    RigidBody *ball = world.CreateRigidBody(Vector2(10, 14), 8.0f);
     ball->radius = 0.5f;
     ball->restitution = 0.6f;
     
@@ -646,6 +647,100 @@ void TestWeb()
 
         Sleep(16);
         renderer.Display();
+    }
+}
+
+void TestCoordinateConversion() {
+    SFMLRenderer renderer(800, 600, 20.0f, 15.0f, "Test ScreenToWorld");
+    // Centro finestra dovrebbe essere centro mondo
+    sf::Vector2i centerScreen(400, 300);  // Per finestra 800x600
+    Vector2 centerWorld = renderer.ScreenToWorld(centerScreen);
+    std::cout << "Centro: (" << centerWorld.x << ", " << centerWorld.y << ")" << std::endl;
+    // Dovrebbe stampare ~(10, 7.5) per un mondo 20x15
+}
+
+void TestMouseInteraction()
+{
+    PhysicsWorld world;
+    SFMLRenderer renderer(800, 600, 20.0f, 15.0f, "Mouse Interaction Test");
+    MouseHandler mouseHandler(100.0f, 15.0f);
+
+    // Setup scena
+    RigidBody *ground = world.CreateRigidBody(Vector2(10, 1), 0.0f);
+    ground->SetAABB(18.0f, 1.0f);
+    ground->restitution = 0.8f;
+
+    for (int i = 0; i < 3; i++) {
+        RigidBody *ball = world.CreateRigidBody(Vector2(5 + i * 3, 8), 1.0f);
+        ball->radius = 0.8f;
+        ball->restitution = 0.7f;
+    }
+
+    RigidBody *box = world.CreateRigidBody(Vector2(10, 10), 2.0f);
+    box->SetAABB(1.5f, 1.5f);
+    box->restitution = 0.6f;
+
+    // Main loop
+    while (renderer.IsOpen()) {
+        // ========== EVENTI ==========
+        while (auto event = renderer.GetWindow().pollEvent()) {
+            if (event->is<sf::Event::Closed>()) {
+                renderer.GetWindow().close();
+            }
+
+            if (event->is<sf::Event::MouseButtonPressed>()) {
+                sf::Vector2i mousePos = sf::Mouse::getPosition(renderer.GetWindow());
+                Vector2 worldPos = renderer.ScreenToWorld(mousePos);
+                mouseHandler.HandleMousePress(worldPos, world);
+            }
+
+            if (event->is<sf::Event::MouseMoved>()) {
+                sf::Vector2i mousePos = sf::Mouse::getPosition(renderer.GetWindow());
+                Vector2 worldPos = renderer.ScreenToWorld(mousePos);
+                mouseHandler.HandleMouseMove(worldPos);
+            }
+
+            if (event->is<sf::Event::MouseButtonReleased>()) {
+                mouseHandler.HandleMouseRelease();
+            }
+        }
+
+        // ========== UPDATE ==========
+        mouseHandler.Update(world);
+        world.Update(1.0f / 60.0f);
+
+        // ========== RENDERING ==========
+        renderer.Clear();
+        renderer.DrawWorld(world);
+        renderer.Display();
+
+        Sleep(16);
+    }
+}
+
+void TestRotationOnly()
+{
+    PhysicsWorld world;
+    world.SetGravity(Vector2::ZERO);  // Disattiva gravità
+    SFMLRenderer renderer(800, 600, 20.0f, 15.0f, "Rotation Test");
+
+    // Crea un box (più facile vedere la rotazione)
+    RigidBody *box = world.CreateRigidBody(Vector2(10, 7.5f), 1.0f);
+    box->SetAABB(2.0f, 1.0f);  // Rettangolo non quadrato
+
+    // Applica momento costante
+    while (renderer.IsOpen()) {
+        renderer.HandleEvents();
+
+        box->ApplyTorque(5.0f);  // Momento costante
+
+        world.Update(1.0f / 60.0f);
+
+        renderer.Clear();
+        renderer.DrawWorld(world);
+        renderer.Display();
+
+        Sleep(16);
     }
 }
 
@@ -667,6 +762,9 @@ int main()
     //TestCircleVsAABB();
     //TestDistanceConstraint();
     //TestChain();
-    TestWeb();
+    //TestWeb();
+    //TestCoordinateConversion();
+    TestMouseInteraction();
+    //TestRotationOnly();
     return 0;
 }

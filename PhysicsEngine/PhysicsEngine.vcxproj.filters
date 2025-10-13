@@ -49,6 +49,12 @@
     <Filter Include="File di origine\Constraints">
       <UniqueIdentifier>{37dfcdb4-7a7b-49c2-8a44-6cc2fecad128}</UniqueIdentifier>
     </Filter>
+    <Filter Include="File di intestazione\Input">
+      <UniqueIdentifier>{5686482d-1cb6-4a1b-b745-66fa0e66c65e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="File di origine\Input">
+      <UniqueIdentifier>{4941eb6c-5d75-49f7-9e8f-984b00f42ff5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Math\Vector2.cpp">
@@ -75,6 +81,9 @@
     <ClCompile Include="src\Constraints\DistanceConstraints.cpp">
       <Filter>File di origine\Constraints</Filter>
     </ClCompile>
+    <ClCompile Include="src\Input\MouseHandler.cpp">
+      <Filter>File di origine\Input</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Math\Vector2.h">
@@ -97,6 +106,9 @@
     </ClInclude>
     <ClInclude Include="include\Constraints\DistanceConstraints.h">
       <Filter>File di intestazione\Constraints</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Input\MouseHandler.h">
+      <Filter>File di intestazione\Input</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

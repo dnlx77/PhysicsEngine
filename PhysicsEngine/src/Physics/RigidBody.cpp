@@ -1,6 +1,7 @@
 ﻿#include "Physics/RigidBody.h"
 #include <cmath>
 #include <algorithm>
+#include <iostream>
 
 // Costruttori
 RigidBody::RigidBody()
@@ -20,7 +21,7 @@ RigidBody::RigidBody(Vector2 pos, float mass)
     forceAccumulator(Vector2::ZERO), torqueAccumulator(0.0f)
 {
     SetMass(mass);
-    SetInertia(mass);  // Inerzia semplificata per iniziare
+    UpdateInertia();
     oldPosition = position;
 }
 
@@ -39,6 +40,27 @@ void RigidBody::ApplyTorque(float torque)
     }
 }
 
+void RigidBody::UpdateInertia()
+{
+    if (isStatic) {
+        inertia = 0.0f;
+        inverseInertia = 0.0f;
+        return;
+    }
+
+    if (shapeType == ShapeType::CIRCLE) {
+        // Momento d'inerzia per un disco pieno: I = (1/2) * m * r²
+        inertia = 0.5f * mass * radius * radius;
+    }
+    else if (shapeType == ShapeType::AABB) {
+        // Momento d'inerzia per un rettangolo: I = (1/12) * m * (w² + h²)
+        inertia = (mass / 12.0f) * (width * width + height * height);
+    }
+
+    // Calcola inverso (con safety check)
+    inverseInertia = (inertia > 1e-6f) ? (1.0f / inertia) : 0.0f;
+}
+
 void RigidBody::SetMass(float newMass)
 {
     if (newMass <= 0.0f) {
@@ -52,11 +74,16 @@ void RigidBody::SetMass(float newMass)
         inverseMass = 1.0f / mass;
         // Non modifichiamo isStatic qui - può essere impostato separatamente
     }
+
+    UpdateInertia();
 }
 
 void RigidBody::SetRadius(float newRadius)
 {
     radius = newRadius;
+    if (shapeType == ShapeType::CIRCLE) {
+        UpdateInertia();  // ✨ Ricalcola inerzia
+    }
 }
 
 void RigidBody::SetInertia(float newInertia)
@@ -101,9 +128,10 @@ void RigidBody::Integrate(float dt)
         velocity = (position - oldPosition) / dt;
     }
 
-    // TODO: Gestione rotazione (dopo)
-    // angularVelocity += torque * inverseInertia * dt;
-    // angle += angularVelocity * dt;
+    // integrazione angolare
+    angularAcceleration = torqueAccumulator * inverseInertia;
+    angularVelocity += angularAcceleration * dt;
+    angle += angularVelocity * dt;
 }
 
 void RigidBody::ClearForces()
@@ -143,6 +171,7 @@ void RigidBody::SetAABB(float w, float h)
     shapeType = ShapeType::AABB;
     width = w;
     height = h;
+    UpdateInertia();
 }
 
 void RigidBody::UpdateVelocityFromPosition(const Vector2 &oldPosition, float dt)

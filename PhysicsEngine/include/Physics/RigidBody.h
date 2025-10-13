@@ -58,7 +58,10 @@ public:
     void ApplyTorque(float torque);
     void ApplyImpulse(const Vector2 &impulse);
     void ApplyImpulseAtPoint(const Vector2 &impulse, const Vector2 &point);
+private:
+    void UpdateInertia();
 
+public:
     // Metodi per impostare proprietà
     void SetMass(float newMass);
     void SetRadius(float newRadius);

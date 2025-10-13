@@ -1,4 +1,4 @@
-#include "Rendering/SFMLRenderer.h"
+﻿#include "Rendering/SFMLRenderer.h"
 
 SFMLRenderer::SFMLRenderer(unsigned int windowWidth,unsigned int windowHeight, float worldW, float worldH, const std::string &title) : worldWidth(worldW), worldHeight(worldH)
 { 
@@ -40,6 +40,13 @@ sf::Vector2f SFMLRenderer::WorldToScreen(const Vector2 &worldPos)
 	return sf::Vector2f(x, y);
 }
 
+Vector2 SFMLRenderer::ScreenToWorld(const sf::Vector2i screenPos)
+{
+    float x = (worldWidth / window.getView().getSize().x) * screenPos.x;
+    float y = (window.getView().getSize().y - 1 - screenPos.y) * (worldHeight / window.getView().getSize().y);
+    return Vector2(x, y);
+}
+
 void SFMLRenderer::HandleEvents()
 {
 	while (auto event = window.pollEvent()) {
@@ -65,6 +72,14 @@ void SFMLRenderer::DrawWorld(const PhysicsWorld &world)
             circle.setFillColor(body->IsStatic() ? sf::Color::Color(128, 128, 128, 255) : sf::Color::Blue);
             circle.setPosition(screenPos);
             window.draw(circle);
+
+            // ✨ Linea rossa per vedere la rotazione
+            sf::RectangleShape indicator(sf::Vector2f(screenRadius, 3));
+            indicator.setOrigin(sf::Vector2f(0, 1.5f));
+            indicator.setPosition(screenPos);
+            indicator.setRotation(sf::radians(body->angle));
+            indicator.setFillColor(sf::Color::Red);
+            window.draw(indicator);
         }
         else if (body->shapeType == ShapeType::AABB) {
             // Crea rettangolo
@@ -74,6 +89,7 @@ void SFMLRenderer::DrawWorld(const PhysicsWorld &world)
             rect.setOrigin(sf::Vector2f(screenWidth / 2, screenHeight / 2));
             rect.setFillColor(body->IsStatic() ? sf::Color::Color(128, 128, 128, 255) : sf::Color::Green);
             rect.setPosition(screenPos);
+            rect.setRotation(sf::radians(body->angle));
             window.draw(rect);
         }
     }
