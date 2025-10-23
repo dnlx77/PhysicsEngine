@@ -7,6 +7,9 @@ PhysicsWorld::PhysicsWorld()
     fixedTimeStep(1.0f / 60.0f),
     timeAccumulator(0.0f)
 {
+    // Crea QuadTree per tutto il mondo (es. 20x15 centrato in 10, 7.5)
+    AABB worldBounds(Vector2(10, 7.5f), 10.0f, 7.5f);
+    quadTree = std::make_unique<QuadTree>(worldBounds, 4);  // capacity = 4
 }
 
 RigidBody *PhysicsWorld::CreateRigidBody(const Vector2 &position, float mass)
@@ -60,13 +63,32 @@ void PhysicsWorld::Step()
     // 3. Risolvi collisioni (position constraints)
     std::vector<CollisionInfo> collisions;
     const int solverIterations = 5;
-
+    
     for (int iteration = 0; iteration < solverIterations; iteration++) {
-        for (size_t i = 0; i < bodies.size(); ++i) {
-            for (size_t j = i + 1; j < bodies.size(); ++j) {
-                CollisionInfo info;
-                bool collided = DetectCollision(bodies[i].get(), bodies[j].get(), info);
+        if (iteration == 0) {
+            quadTree->Clear();
+            for (auto &body : bodies) {
+                quadTree->Insert(body.get());
+            }
+        }
 
+        // Usa QuadTree invece del doppio loop
+        for (auto &body : bodies) {
+            std::vector<RigidBody *> nearby;
+
+            // Crea AABB di query (espandi un po' per sicurezza)
+            float querySize = body->shapeType == ShapeType::CIRCLE ?
+                body->radius * 3.0f :
+                std::max(body->width, body->height) * 2.0f;
+            AABB queryRange(body->position, querySize, querySize);
+
+            quadTree->Query(queryRange, nearby);
+
+            for (auto *other : nearby) {
+                if (body.get() >= other) continue;  // Evita duplicati e self-check
+
+                CollisionInfo info;
+                bool collided = DetectCollision(body.get(), other, info);
                 if (collided) {
                     if (iteration == 0) {
                         collisions.push_back(info);
@@ -76,6 +98,7 @@ void PhysicsWorld::Step()
             }
         }
 
+        // Constraints
         for (auto &constraint : constraints) {
             constraint->Solve();
         }

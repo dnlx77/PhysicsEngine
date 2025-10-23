@@ -2,6 +2,7 @@
 #include "Physics/RigidBody.h"
 #include "Collision/CollisionDetection.h"
 #include "Constraints/DistanceConstraints.h"
+#include "Collision/Quadtree.h"
 #include <vector>
 #include <memory>
 #include <set>
@@ -11,6 +12,7 @@ private:
     //int nextBodyId = 0;  // NUOVO: contatore ID
     std::vector<std::unique_ptr<RigidBody>> bodies;
     std::vector<std::unique_ptr<DistanceConstraint>> constraints;
+    std::unique_ptr<QuadTree> quadTree;
     Vector2 gravity;
     float fixedTimeStep;        // Timestep fisso per stabilità
     float timeAccumulator;      // Accumula tempo per timestep fisso
