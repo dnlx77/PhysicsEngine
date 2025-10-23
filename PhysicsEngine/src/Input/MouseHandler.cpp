@@ -55,7 +55,7 @@ void MouseHandler::HandleMouseRelease()
     clickOffsetLocal = Vector2::ZERO;
 }
 
-void MouseHandler::Update(PhysicsWorld &world)
+void MouseHandler::Update(PhysicsWorld &)
 {
     if (!selectedBody) return;
 
@@ -80,4 +80,19 @@ void MouseHandler::Update(PhysicsWorld &world)
     float torque = -(clickOffsetWorld.x * force.y - clickOffsetWorld.y * force.x);
     float angularDamping = -dragDamping * 0.1f * selectedBody->angularVelocity;
     selectedBody->ApplyTorque(torque + angularDamping);
+}
+
+Vector2 MouseHandler::GetAttachPoint() const
+{
+    if (!selectedBody) return Vector2::ZERO;
+
+    // Ruota offset locale → mondo
+    float cosA = std::cos(selectedBody->angle);
+    float sinA = std::sin(selectedBody->angle);
+
+    Vector2 offsetWorld;
+    offsetWorld.x = clickOffsetLocal.x * cosA - clickOffsetLocal.y * sinA;
+    offsetWorld.y = clickOffsetLocal.x * sinA + clickOffsetLocal.y * cosA;
+
+    return selectedBody->position + offsetWorld;
 }

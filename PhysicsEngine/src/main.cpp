@@ -1,5 +1,5 @@
 ﻿#include <iostream>
-#include "Windows.h"
+#include <Windows.h>
 #include "Math/Vector2.h"
 #include "Physics/RigidBody.h"
 #include "Physics/PhysicsWorld.h"
@@ -179,8 +179,8 @@ void TestRenderer()
     ConsoleRenderer renderer(80, 24, 20.0f, 15.0f);
 
     // Crea una palla che cade
-    RigidBody *ball = world.CreateRigidBody(Vector2(10, 12), 1.0f);
-    RigidBody *ground = world.CreateRigidBody(Vector2(10, 1), 0.0f); // massa 0 = statico
+    world.CreateRigidBody(Vector2(10, 12), 1.0f);
+    world.CreateRigidBody(Vector2(10, 1), 0.0f); // massa 0 = statico
 
     // Simula e mostra per ~2 secondi
     for (int frame = 0; frame < 120; frame++) {
@@ -201,7 +201,7 @@ void TestRendererStatic()
     PhysicsWorld world;
     ConsoleRenderer renderer(80, 24, 20.0f, 15.0f);
 
-    RigidBody *ball = world.CreateRigidBody(Vector2(10, 7), 1.0f);
+    world.CreateRigidBody(Vector2(10, 7), 1.0f);
 
     renderer.Clear();
     renderer.DrawWorld(world);
@@ -671,7 +671,7 @@ void TestMouseInteraction()
     ground->restitution = 0.8f;
 
     for (int i = 0; i < 3; i++) {
-        RigidBody *ball = world.CreateRigidBody(Vector2(5 + i * 3, 8), 1.0f);
+        RigidBody *ball = world.CreateRigidBody(Vector2(5.0f + i * 3, 8.0f), 1.0f);
         ball->radius = 0.8f;
         ball->restitution = 0.7f;
     }
@@ -689,9 +689,21 @@ void TestMouseInteraction()
             }
 
             if (event->is<sf::Event::MouseButtonPressed>()) {
+                auto *mouseButton = event->getIf<sf::Event::MouseButtonPressed>();
                 sf::Vector2i mousePos = sf::Mouse::getPosition(renderer.GetWindow());
                 Vector2 worldPos = renderer.ScreenToWorld(mousePos);
-                mouseHandler.HandleMousePress(worldPos, world);
+                if (mouseButton->button == sf::Mouse::Button::Left) {
+                    mouseHandler.HandleMousePress(worldPos, world);
+                }
+                else if (mouseButton->button == sf::Mouse::Button::Right) {
+                    RigidBody *newBody = world.CreateRigidBody(worldPos, 1.0f);
+                    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::C))
+                        newBody->radius = 0.5f;
+                    else 
+                        newBody->SetAABB(1, 1);
+
+                    newBody->restitution = 0.7f;
+                }
             }
 
             if (event->is<sf::Event::MouseMoved>()) {
@@ -712,6 +724,11 @@ void TestMouseInteraction()
         // ========== RENDERING ==========
         renderer.Clear();
         renderer.DrawWorld(world);
+        renderer.DrawDebugInfo(static_cast<int>(world.GetBodies().size()));
+        if (mouseHandler.IsDragging()) {
+            renderer.HighlightBody(mouseHandler.GetSelectedBody());
+            renderer.DrawDragLine(mouseHandler.GetAttachPoint(), mouseHandler.GetMouseWorldPosition());
+        }
         renderer.Display();
 
         Sleep(16);

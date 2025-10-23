@@ -112,13 +112,13 @@ void RigidBody::Integrate(float dt)
     if (IsStatic()) return;
 
     // 🎯 VERLET INTEGRATION
-    Vector2 acceleration = forceAccumulator * inverseMass;
+    Vector2 acc = forceAccumulator * inverseMass;
 
     // Salva posizione corrente
     Vector2 temp = position;
 
     // Verlet: newPos = pos + (pos - oldPos) + acc * dt²
-    position = position + (position - oldPosition) + acceleration * (dt * dt);
+    position = position + (position - oldPosition) + acc * (dt * dt);
 
     // Update oldPosition
     oldPosition = temp;
@@ -174,9 +174,9 @@ void RigidBody::SetAABB(float w, float h)
     UpdateInertia();
 }
 
-void RigidBody::UpdateVelocityFromPosition(const Vector2 &oldPosition, float dt)
+void RigidBody::UpdateVelocityFromPosition(const Vector2 &oldPos, float dt)
 {
     if (dt > 1e-6f) {  // 🎯 Safety check aggiunto!
-        velocity = (position - oldPosition) / dt;
+        velocity = (position - oldPos) / dt;
     }
 }

@@ -104,7 +104,6 @@ bool PhysicsWorld::DetectCollision(RigidBody *a, RigidBody *b, CollisionInfo &in
         else
             return CollisionDetection::CircleVsAABB(b, a, info);
     }
-    return false;
 }
 
 void PhysicsWorld::SolvePositionConstraint(const CollisionInfo &info)

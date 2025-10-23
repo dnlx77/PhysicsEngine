@@ -1,8 +1,17 @@
 ﻿#include "Rendering/SFMLRenderer.h"
+#include <iostream>
 
 SFMLRenderer::SFMLRenderer(unsigned int windowWidth,unsigned int windowHeight, float worldW, float worldH, const std::string &title) : worldWidth(worldW), worldHeight(worldH)
 { 
 	window.create(sf::VideoMode({ windowWidth, windowHeight }), title);
+
+    if (!font.openFromFile("assets/fonts/roboto-regular.ttf")) {
+        std::cerr << "Errore caricamento font!" << std::endl;
+    }
+
+    debugText = sf::Text(font);
+    debugText->setCharacterSize(20);
+    debugText->setFillColor(sf::Color::White);
 }
 
 bool SFMLRenderer::IsOpen() const
@@ -104,5 +113,60 @@ void SFMLRenderer::DrawWorld(const PhysicsWorld &world)
                 sf::Color(100, 100, 100)
             );
         }
+    }
+}
+
+void SFMLRenderer::HighlightBody(RigidBody *body)
+{
+    if (!body) return;
+
+    sf::Vector2f screenPos = WorldToScreen(body->position);
+
+    if (body->shapeType == ShapeType::CIRCLE) {
+        // Outline per cerchio
+        float screenRadius = (window.getView().getSize().x / worldWidth) * body->radius;
+
+        sf::CircleShape outline(screenRadius + 3);  // +3 pixel di bordo
+        outline.setOrigin(sf::Vector2f(screenRadius + 3, screenRadius + 3));
+        outline.setFillColor(sf::Color::Transparent);
+        outline.setOutlineThickness(3.0f);
+        outline.setOutlineColor(sf::Color::Yellow);
+        outline.setPosition(screenPos);
+        window.draw(outline);
+    }
+    else if (body->shapeType == ShapeType::AABB) {
+        // Outline per rettangolo
+        float screenWidth = (window.getView().getSize().x / worldWidth) * body->width;
+        float screenHeight = (window.getView().getSize().y / worldHeight) * body->height;
+
+        sf::RectangleShape outline(sf::Vector2f(screenWidth + 6, screenHeight + 6));  // +6 per centrare il bordo
+        outline.setOrigin(sf::Vector2f((screenWidth + 6) / 2, (screenHeight + 6) / 2));
+        outline.setFillColor(sf::Color::Transparent);
+        outline.setOutlineThickness(3.0f);
+        outline.setOutlineColor(sf::Color::Yellow);
+        outline.setPosition(screenPos);
+        outline.setRotation(sf::radians(body->angle));
+        window.draw(outline);
+    }
+}
+
+void SFMLRenderer::DrawDragLine(Vector2 from, Vector2 to)
+{
+    sf::Vector2f fromPos = WorldToScreen(from);
+    sf::Vector2f toPOs = WorldToScreen(to);
+    sf::VertexArray line(sf::PrimitiveType::Lines, 2);
+    line[0].position = fromPos;
+    line[1].position = toPOs;
+    line[0].color = sf::Color::Red;
+    line[1].color = sf::Color::Red;
+    window.draw(line);
+}
+
+void SFMLRenderer::DrawDebugInfo(int bodyCount)
+{
+    if (debugText) {
+        debugText->setString("Bodies: " + std::to_string(bodyCount));
+        debugText->setPosition(sf::Vector2f(20.0f, 20.0f));
+        window.draw(*debugText);
     }
 }

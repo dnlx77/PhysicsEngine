@@ -7,7 +7,7 @@ class MouseHandler {
 private:
     Vector2 mouseWorldPosition;      // Posizione corrente del mouse nel mondo
     RigidBody *selectedBody;         // Corpo attualmente selezionato
-    Vector2 clickOffsetLocal;             // Offset dal centro del corpo al punto di click
+    Vector2 clickOffsetLocal;        // Offset dal centro del corpo al punto di click
 
     float dragStiffness;             // Costante elastica della "molla" del drag
     float dragDamping;
@@ -24,9 +24,13 @@ public:
     void HandleMouseRelease();
 
     // Applica forze al corpo selezionato (chiamato ogni frame)
-    void Update(PhysicsWorld &world);
+    void Update(PhysicsWorld &);
 
     // Query
     bool IsDragging() const { return selectedBody != nullptr; }
     RigidBody *GetSelectedBody() const { return selectedBody; }
+
+    // Getter
+    Vector2 GetMouseWorldPosition() const { return mouseWorldPosition; }
+    Vector2 GetAttachPoint() const;
 };
