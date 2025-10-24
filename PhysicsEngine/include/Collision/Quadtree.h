@@ -2,6 +2,7 @@
 #include "Collision/AABB.h"
 #include "Physics/RigidBody.h"
 #include <vector>
+#include <set>
 #include <memory>
 
 class QuadTree {
@@ -17,11 +18,12 @@ private:
     std::unique_ptr<QuadTree> southEast;
 
     void Subdivide();
+    bool InsertIntoChildren(RigidBody *body);
 
 public:
     QuadTree(const AABB &boundary, int capacity);
 
     bool Insert(RigidBody *body);
-    void Query(const AABB &range, std::vector<RigidBody *> &found);
+    void Query(const AABB &range, std::set<RigidBody *> &found);
     void Clear();
 };

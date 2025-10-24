@@ -32,29 +32,24 @@ bool QuadTree::Insert(RigidBody *body)
 
         // Redistribuisci oggetti esistenti nei figli
         for (auto *obj : objects) {
-            northWest->Insert(obj) || northEast->Insert(obj) ||
-                southWest->Insert(obj) || southEast->Insert(obj);
+            InsertIntoChildren(obj);
         }
 
         // Svuota questo nodo (ora gli oggetti sono nei figli)
         objects.clear();
     }
 
-    if (northWest->Insert(body) || northEast->Insert(body) ||
-        southWest->Insert(body) || southEast->Insert(body))
-        return true;
-
-    return false;
+    return InsertIntoChildren(body);
 }
 
-void QuadTree::Query(const AABB &range, std::vector<RigidBody *> &found)
+void QuadTree::Query(const AABB &range, std::set<RigidBody *> &found)
 {
     if (!boundary.Intersects(range))
         return;
 
     for (auto obj : objects) {
         if (range.Contains(obj->position))
-            found.push_back(obj);
+            found.insert(obj);
     }
 
     if (divided) {
@@ -82,4 +77,28 @@ void QuadTree::Subdivide()
     southEast = std::make_unique<QuadTree>(AABB(Vector2(boundary.center.x + quaterWidth, boundary.center.y - quaterHeight), quaterWidth, quaterHeight), capacity);
 
     divided = true;
+}
+
+bool QuadTree::InsertIntoChildren(RigidBody *body)
+{
+    // Calcola AABB del corpo
+    float halfW = body->shapeType == ShapeType::CIRCLE ?
+        body->radius : body->width / 2.0f;
+    float halfH = body->shapeType == ShapeType::CIRCLE ?
+        body->radius : body->height / 2.0f;
+
+    AABB bodyBounds(body->position, halfW, halfH);
+
+    // Inserisci in TUTTI i quadranti che interseca
+    bool inserted = false;
+    if (northWest->boundary.Intersects(bodyBounds))
+        inserted |= northWest->Insert(body);
+    if (northEast->boundary.Intersects(bodyBounds))
+        inserted |= northEast->Insert(body);
+    if (southWest->boundary.Intersects(bodyBounds))
+        inserted |= southWest->Insert(body);
+    if (southEast->boundary.Intersects(bodyBounds))
+        inserted |= southEast->Insert(body);
+
+    return inserted;
 }

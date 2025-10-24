@@ -74,12 +74,22 @@ void PhysicsWorld::Step()
 
         // Usa QuadTree invece del doppio loop
         for (auto &body : bodies) {
-            std::vector<RigidBody *> nearby;
+            std::set<RigidBody *> nearby;
 
             // Crea AABB di query (espandi un po' per sicurezza)
-            float querySize = body->shapeType == ShapeType::CIRCLE ?
-                body->radius * 3.0f :
-                std::max(body->width, body->height) * 2.0f;
+            float baseSize = body->shapeType == ShapeType::CIRCLE ?
+                body->radius * 2.0f :
+                std::max(body->width, body->height);
+
+            // Trova dimensione massima nel mondo
+            float maxSize = 5.0f;  // Default
+            for (auto &b : bodies) {
+                float size = b->shapeType == ShapeType::CIRCLE ?
+                    b->radius : std::max(b->width, b->height);
+                maxSize = std::max(maxSize, size);
+            }
+
+            float querySize = baseSize + maxSize;
             AABB queryRange(body->position, querySize, querySize);
 
             quadTree->Query(queryRange, nearby);
