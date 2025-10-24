@@ -2,6 +2,7 @@
 #include "Physics/RigidBody.h"
 #include "Collision/CollisionDetection.h"
 #include "Constraints/DistanceConstraints.h"
+#include "Constraints/PinConstraint.h"
 #include "Collision/Quadtree.h"
 #include <vector>
 #include <memory>
@@ -11,7 +12,7 @@ class PhysicsWorld {
 private:
     //int nextBodyId = 0;  // NUOVO: contatore ID
     std::vector<std::unique_ptr<RigidBody>> bodies;
-    std::vector<std::unique_ptr<DistanceConstraint>> constraints;
+    std::vector<std::unique_ptr<Constraint>> constraints;
     std::unique_ptr<QuadTree> quadTree;
     Vector2 gravity;
     float fixedTimeStep;        // Timestep fisso per stabilità
@@ -28,7 +29,8 @@ public:
 
     // Gestione RigidBody
     RigidBody *CreateRigidBody(const Vector2 &position, float mass);
-    DistanceConstraint *CreateDistanceConstraint(RigidBody *bodyA, RigidBody *bodyB, float stif);
+    DistanceConstraint *CreateDistanceConstraint(RigidBody *bodyA, RigidBody *bodyB, float stiff);
+    PinConstraint *CreatePinConstraint(RigidBody *body, const Vector2 &pin, float stiff);
     void RemoveRigidBody(RigidBody *body);
     void Clear();
 
@@ -46,6 +48,6 @@ public:
     // Utility
     size_t GetBodyCount() const { return bodies.size(); }
     const std::vector<std::unique_ptr<RigidBody>> &GetBodies() const { return bodies; }
-    const std::vector<std::unique_ptr<DistanceConstraint>> &GetConstraints() const { return constraints; }
+    const std::vector<std::unique_ptr<Constraint>> &GetConstraints() const { return constraints; }
     float GetFixedTimeStep() const { return fixedTimeStep; }
 };

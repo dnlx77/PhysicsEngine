@@ -1,18 +1,19 @@
 #pragma once
 #include <memory>
+#include "Constraints/Constraint.h"
 #include "Physics/RigidBody.h"
 
-class DistanceConstraint {
+class DistanceConstraint : public Constraint{
 private:
-	RigidBody *particleA;
 	RigidBody *particleB;
 	float restLength;
-	float stiffness;
 
 public:
 	DistanceConstraint(RigidBody *a, RigidBody *b, float stiff = 1.0f);
-	bool IsValid() const { return particleA && particleB; }
-	RigidBody *GetParticleA() const { return particleA; }
-	RigidBody *GetParticleB() const { return particleB; }
-	void Solve();
+	
+	bool IsValid() const override { return particleA && particleB; }
+	RigidBody *GetParticleA() const override { return particleA; }
+	RigidBody *GetParticleB() const override { return particleB; }
+	Vector2 GetPin() const override { return Vector2::ZERO; }
+	void Solve() override;
 };

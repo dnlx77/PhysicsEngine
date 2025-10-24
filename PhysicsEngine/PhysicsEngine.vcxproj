@@ -21,8 +21,10 @@
   <ItemGroup>
     <ClCompile Include="src\Collision\AABB.cpp" />
     <ClCompile Include="src\Collision\QuadTree.cpp" />
+    <ClCompile Include="src\Constraints\Constraint.cpp" />
     <ClCompile Include="src\Constraints\DistanceConstraints.cpp" />
     <ClCompile Include="src\Collision\CollisionDetection.cpp" />
+    <ClCompile Include="src\Constraints\PinConstraint.cpp" />
     <ClCompile Include="src\Input\MouseHandler.cpp" />
     <ClCompile Include="src\Rendering\ConsoleRenderer.cpp" />
     <ClCompile Include="src\Physics\PhysicsWorld.cpp" />
@@ -35,7 +37,9 @@
     <ClInclude Include="include\Collision\AABB.h" />
     <ClInclude Include="include\Collision\CollisionDetection.h" />
     <ClInclude Include="include\Collision\Quadtree.h" />
+    <ClInclude Include="include\Constraints\Constraint.h" />
     <ClInclude Include="include\Constraints\DistanceConstraints.h" />
+    <ClInclude Include="include\Constraints\PinConstraint.h" />
     <ClInclude Include="include\Input\MouseHandler.h" />
     <ClInclude Include="include\Math\Vector2.h" />
     <ClInclude Include="include\Physics\PhysicsWorld.h" />

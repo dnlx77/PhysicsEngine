@@ -761,6 +761,126 @@ void TestRotationOnly()
     }
 }
 
+void TestPinConstraint()
+{
+    PhysicsWorld world;
+    SFMLRenderer renderer(800, 600, 20.0f, 15.0f, "Pin Constraint - Pendulum");
+    MouseHandler mouseHandler(100.0f, 15.0f);
+
+    Vector2 pinPos(10.0f, 12.0f);
+
+    RigidBody *pendulum = world.CreateRigidBody(Vector2(10.0f, 10.0f), 1.0f);
+    pendulum->radius = 0.5f;
+    pendulum->restitution = 0.8f;
+
+    world.CreatePinConstraint(pendulum, pinPos, 1.0f);
+
+    while (renderer.IsOpen()) {
+        // EVENTO MOUSE
+        while (auto event = renderer.GetWindow().pollEvent()) {
+            if (event->is<sf::Event::Closed>()) {
+                renderer.GetWindow().close();
+            }
+
+            if (event->is<sf::Event::MouseButtonPressed>()) {
+                auto *mouseButton = event->getIf<sf::Event::MouseButtonPressed>();
+                sf::Vector2i mousePos = sf::Mouse::getPosition(renderer.GetWindow());
+                Vector2 worldPos = renderer.ScreenToWorld(mousePos);
+                if (mouseButton->button == sf::Mouse::Button::Left) {
+                    mouseHandler.HandleMousePress(worldPos, world);
+                }
+            }
+
+            if (event->is<sf::Event::MouseMoved>()) {
+                sf::Vector2i mousePos = sf::Mouse::getPosition(renderer.GetWindow());
+                Vector2 worldPos = renderer.ScreenToWorld(mousePos);
+                mouseHandler.HandleMouseMove(worldPos);
+            }
+
+            if (event->is<sf::Event::MouseButtonReleased>()) {
+                mouseHandler.HandleMouseRelease();
+            }
+        }
+
+        // UPDATE MOUSE
+        mouseHandler.Update(world);
+
+        world.Update(1.0f / 60.0f);
+
+        renderer.Clear();
+        renderer.DrawWorld(world);
+        renderer.DrawDebugInfo(static_cast<int>(world.GetBodies().size()));
+
+        // HIGHLIGHT DRAG
+        if (mouseHandler.IsDragging()) {
+            renderer.HighlightBody(mouseHandler.GetSelectedBody());
+            renderer.DrawDragLine(mouseHandler.GetAttachPoint(), mouseHandler.GetMouseWorldPosition());
+        }
+
+        renderer.Display();
+
+        Sleep(16);
+    }
+}
+
+void TestDoublePendulum()
+{
+    PhysicsWorld world;
+    SFMLRenderer renderer(800, 600, 20.0f, 15.0f, "Double Pendulum");
+    MouseHandler mouseHandler(100.0f, 15.0f);
+
+    // 🎯 Primo pin (ancoraggio)
+    Vector2 pin1(10.0f, 13.0f);
+
+    // 🎯 Primo pendolo appeso al pin1
+    RigidBody *pendulum1 = world.CreateRigidBody(Vector2(10.0f, 11.0f), 1.0f);
+    pendulum1->radius = 0.4f;
+    world.CreatePinConstraint(pendulum1, pin1, 1.0f);
+
+    // 🎯 Secondo pendolo appeso al PRIMO pendolo
+    RigidBody *pendulum2 = world.CreateRigidBody(Vector2(10.0f, 9.0f), 0.8f);
+    pendulum2->radius = 0.4f;
+    world.CreateDistanceConstraint(pendulum1, pendulum2, 1.0f);  // Distance tra i due
+
+    while (renderer.IsOpen()) {
+        // Mouse events
+        while (auto event = renderer.GetWindow().pollEvent()) {
+            if (event->is<sf::Event::Closed>()) {
+                renderer.GetWindow().close();
+            }
+            if (event->is<sf::Event::MouseButtonPressed>()) {
+                auto *mouseButton = event->getIf<sf::Event::MouseButtonPressed>();
+                if (mouseButton->button == sf::Mouse::Button::Left) {
+                    sf::Vector2i mousePos = sf::Mouse::getPosition(renderer.GetWindow());
+                    Vector2 worldPos = renderer.ScreenToWorld(mousePos);
+                    mouseHandler.HandleMousePress(worldPos, world);
+                }
+            }
+            if (event->is<sf::Event::MouseMoved>()) {
+                sf::Vector2i mousePos = sf::Mouse::getPosition(renderer.GetWindow());
+                Vector2 worldPos = renderer.ScreenToWorld(mousePos);
+                mouseHandler.HandleMouseMove(worldPos);
+            }
+            if (event->is<sf::Event::MouseButtonReleased>()) {
+                mouseHandler.HandleMouseRelease();
+            }
+        }
+
+        mouseHandler.Update(world);
+        world.Update(1.0f / 60.0f);
+
+        renderer.Clear();
+        renderer.DrawWorld(world);
+        if (mouseHandler.IsDragging()) {
+            renderer.HighlightBody(mouseHandler.GetSelectedBody());
+            renderer.DrawDragLine(mouseHandler.GetAttachPoint(), mouseHandler.GetMouseWorldPosition());
+        }
+        renderer.Display();
+
+        Sleep(16);
+    }
+}
+
 int main()
 {
     //TestVector2();
@@ -781,7 +901,9 @@ int main()
     //TestChain();
     //TestWeb();
     //TestCoordinateConversion();
-    TestMouseInteraction();
+    //TestMouseInteraction();
     //TestRotationOnly();
+    //TestPinConstraint();
+    TestDoublePendulum();
     return 0;
 }

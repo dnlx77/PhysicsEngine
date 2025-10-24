@@ -28,7 +28,7 @@ void SFMLRenderer::DrawLine(const Vector2 &start, const Vector2 &end, sf::Color 
 {
     sf::Vector2f screenStart = WorldToScreen(start);
     sf::Vector2f screenEnd = WorldToScreen(end);
-
+    
     sf::Vertex line[] = {
         sf::Vertex(screenStart, color),
         sf::Vertex(screenEnd, color)
@@ -82,7 +82,7 @@ void SFMLRenderer::DrawWorld(const PhysicsWorld &world)
             circle.setPosition(screenPos);
             window.draw(circle);
 
-            // ✨ Linea rossa per vedere la rotazione
+            // Linea rossa per vedere la rotazione
             sf::RectangleShape indicator(sf::Vector2f(screenRadius, 3));
             indicator.setOrigin(sf::Vector2f(0, 1.5f));
             indicator.setPosition(screenPos);
@@ -102,16 +102,32 @@ void SFMLRenderer::DrawWorld(const PhysicsWorld &world)
             window.draw(rect);
         }
     }
-
+    
     // Disegna constraints
     const auto &constraints = world.GetConstraints();
     for (const auto &c : constraints) {
         if (c->IsValid()) {
-            DrawLine(
-                c->GetParticleA()->position,
-                c->GetParticleB()->position,
-                sf::Color(100, 100, 100)
-            );
+            Vector2 pointA = c->GetParticleA()->position;
+            Vector2 pointB = c->GetParticleB() ? c->GetParticleB()->position : c->GetPin();
+            DrawLine(pointA, pointB, sf::Color(100, 100, 100));
+        }
+    }
+
+    // Disegna i pin dei constraint
+    for (const auto &c : constraints) {
+        Vector2 pin = c->GetPin();
+        if (pin != Vector2::ZERO) {  // È un PinConstraint
+            sf::Vector2f screenPin = WorldToScreen(pin);
+
+            // Quadratino
+            float pinSize = 0.3f;  // dimensione mondo
+            float screenSize = (window.getView().getSize().x / worldWidth) * pinSize;
+
+            sf::RectangleShape pinSquare(sf::Vector2f(screenSize, screenSize));
+            pinSquare.setOrigin(sf::Vector2f(screenSize / 2, screenSize / 2));
+            pinSquare.setFillColor(sf::Color::Yellow);
+            pinSquare.setPosition(screenPin);
+            window.draw(pinSquare);
         }
     }
 }

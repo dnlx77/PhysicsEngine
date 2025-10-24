@@ -90,6 +90,12 @@
     <ClCompile Include="src\Collision\AABB.cpp">
       <Filter>File di origine\Collision</Filter>
     </ClCompile>
+    <ClCompile Include="src\Constraints\Constraint.cpp">
+      <Filter>File di origine\Constraints</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Constraints\PinConstraint.cpp">
+      <Filter>File di origine\Constraints</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Math\Vector2.h">
@@ -121,6 +127,12 @@
     </ClInclude>
     <ClInclude Include="include\Collision\AABB.h">
       <Filter>File di intestazione\Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Constraints\Constraint.h">
+      <Filter>File di intestazione\Constraints</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Constraints\PinConstraint.h">
+      <Filter>File di intestazione\Constraints</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

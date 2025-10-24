@@ -1,7 +1,8 @@
 #include "Constraints/DistanceConstraints.h"
+#include "Constraints/Constraint.h"
 #include <iostream>
 
-DistanceConstraint::DistanceConstraint(RigidBody *a, RigidBody *b, float stiff) : particleA(a), particleB(b), stiffness(stiff)
+DistanceConstraint::DistanceConstraint(RigidBody *a, RigidBody *b, float stiff) : Constraint(a, stiff), particleB(b)
 {
 	restLength = Vector2::Distance(a->position, b->position);
 }

@@ -18,10 +18,16 @@ RigidBody *PhysicsWorld::CreateRigidBody(const Vector2 &position, float mass)
     return bodies.back().get();
 }
 
-DistanceConstraint *PhysicsWorld::CreateDistanceConstraint(RigidBody *bodyA, RigidBody *bodyB, float stif)
+DistanceConstraint *PhysicsWorld::CreateDistanceConstraint(RigidBody *bodyA, RigidBody *bodyB, float stiff)
 {
-    constraints.emplace_back(std::make_unique<DistanceConstraint>(bodyA, bodyB, stif));
-    return constraints.back().get();
+    constraints.emplace_back(std::make_unique<DistanceConstraint>(bodyA, bodyB, stiff));
+    return static_cast<DistanceConstraint *>(constraints.back().get());
+}
+
+PinConstraint *PhysicsWorld::CreatePinConstraint(RigidBody *body, const Vector2 &pin, float stiff)
+{
+    constraints.emplace_back(std::make_unique<PinConstraint>(body, pin, stiff));
+    return static_cast<PinConstraint *>(constraints.back().get());
 }
 
 void PhysicsWorld::SetGravity(const Vector2 &g)
